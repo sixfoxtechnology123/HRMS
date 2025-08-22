@@ -1,25 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./Master/Layout";
+import HomePage from "./component/HomePage";
+import BackButton from "./component/BackButton";
+import MasterPage from "./Master/MasterPage";
+import DepartmentList from "./Master/DepartmentList";
+import DepartmentMaster from "./Master/DepartmentMaster";
+import DesignationMaster from "./Master/DesignationMaster";
+import DesignationList from "./Master/DesignationList";
 
-function App() {
+
+export default function App(){
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/Layout" element={<Layout/>} />
+      <Route path="/" element={<HomePage/>} />
+      <Route path="/BackButton" element={<BackButton/>} />
+      <Route path="/MasterPage" element={<MasterPage/>} />
+      <Route path="/DepartmentList" element={<DepartmentList/>} />
+      <Route path="/DepartmentMaster" element={<DepartmentMaster/>} />
+      <Route path="/DesignationMaster" element={<DesignationMaster/>} />
+      <Route path="/DesignationList" element={<DesignationList/>} />
+    </Routes>
   );
 }
-
-export default App;
