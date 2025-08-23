@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaClinicMedical, FaUserTie, FaCalendarCheck } from "react-icons/fa"; 
+import { FaClinicMedical, FaUserTie, FaCalendarCheck, FaRegCalendarAlt, FaClock } from "react-icons/fa"; 
 import BackButton from "../component/BackButton"; // adjust path if needed
 
 const MasterPage = () => {
@@ -43,6 +43,27 @@ const MasterPage = () => {
             Leave Type
           </h2>
         </div>
+        {/* Holiday Master Box */}
+        <div
+          className="group p-6 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-yellow-100 transition"
+          onClick={() => navigate("/HolidayList")}
+        >
+          <FaRegCalendarAlt size={60} className="mx-auto text-yellow-600" />
+          <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
+            Holiday
+          </h2>
+        </div>
+         {/* Shift Master Box */}
+        <div
+          className="group p-6 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-purple-100 transition"
+          onClick={() => navigate("/ShiftList")}
+        >
+          <FaClock size={60} className="mx-auto text-purple-600" />
+          <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
+            Shift
+          </h2>
+        </div>
+
       </div>
 
       {/* Back Button */}

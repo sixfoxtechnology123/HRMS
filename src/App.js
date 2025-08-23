@@ -10,6 +10,10 @@ import DesignationMaster from "./Master/DesignationMaster";
 import DesignationList from "./Master/DesignationList";
 import LeaveTypeMaster from "./Master/leavetypemaster";
 import LeaveTypeList from "./Master/leavetypelist";
+import HolidayMaster from "./Master/HolidayMaster";
+import HolidayList from "./Master/HolidayList";
+import ShiftMaster from "./Master/Shiftmaster";
+import ShiftList from "./Master/Shiftlist";
 
 
 export default function App(){
@@ -25,6 +29,10 @@ export default function App(){
       <Route path="/DesignationList" element={<DesignationList/>} />
       <Route path="/LeaveTypeMaster" element={<LeaveTypeMaster/>} />
       <Route path="/LeaveTypeList" element={<LeaveTypeList/>} />
+      <Route path="/HolidayMaster" element={<HolidayMaster/>} />
+      <Route path="/HolidayList" element={<HolidayList/>} />
+      <Route path="/ShiftMaster" element={<ShiftMaster/>} />
+      <Route path="/ShiftList" element={<ShiftList/>} />
     </Routes>
   );
 }

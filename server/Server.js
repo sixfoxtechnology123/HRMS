@@ -6,6 +6,8 @@ const departmentRoutes = require("./routes/departmentRoutes");
 const designationRoutes = require("./routes/designationRoutes");
 const masterRoutes = require('./routes/masterRoutes');
 const leaveTypeRoutes = require("./routes/leavetyperoutes");
+const holidayRoutes=require('./routes/holidayRoutes')
+const shiftRoutes = require("./routes/shiftroutes");
 
 dotenv.config();
 connectDB();
@@ -19,6 +21,10 @@ app.use('/api/master', masterRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/designations", designationRoutes);
 app.use("/api/leavetypes", leaveTypeRoutes);
+app.use("/api/holidays",holidayRoutes);
+app.use("/api/shifts", shiftRoutes);
+
+
 
 
 // Function to start server with fallback ports
