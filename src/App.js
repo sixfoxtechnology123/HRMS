@@ -16,6 +16,8 @@ import ShiftMaster from "./Master/Shiftmaster";
 import ShiftList from "./Master/Shiftlist";
 import PolicyMaster from "./Master/Policymaster";
 import PolicyList from "./Master/PolicyList";
+import LocationMaster from "./Master/LocationMaster";
+import LocationList from "./Master/Locationlist";
 
 
 export default function App(){
@@ -37,6 +39,8 @@ export default function App(){
       <Route path="/ShiftList" element={<ShiftList/>} />
       <Route path="/PolicyMaster" element={<PolicyMaster/>} />
       <Route path="/PolicyList" element={<PolicyList/>} />
+      <Route path="/LocationMaster" element={<LocationMaster/>} />
+      <Route path="/LocationList" element={<LocationList/>} />
     </Routes>
   );
 }
