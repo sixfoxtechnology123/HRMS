@@ -29,7 +29,7 @@ const MasterPage = () => {
         >
           <FaUserTie size={60} className="mx-auto text-green-600" />
           <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
-            Designationssssssssssssss
+            Designation
           </h2>
         </div>
 
