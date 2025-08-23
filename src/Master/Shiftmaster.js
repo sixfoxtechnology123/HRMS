@@ -80,14 +80,15 @@ const ShiftMaster = () => {
 
   return (
     <div className="min-h-screen bg-zinc-300 flex items-center justify-center">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-6xl">
         <h2 className="text-2xl font-bold mb-4 text-center text-black">
-          {isEditMode ? "Update Shift" : "Shift Master"}
+          {isEditMode ? "Update Shift" : "Shift"}
         </h2>
 
-        <form onSubmit={handleSaveOrUpdate}>
-          <div className="mb-4">
-            <label className="block text-black mb-1">Shift ID</label>
+        <form onSubmit={handleSaveOrUpdate}
+         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block font-medium">Shift ID</label>
             <input
               type="text"
               name="shiftID"
@@ -97,61 +98,61 @@ const ShiftMaster = () => {
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-black mb-1">Shift Name</label>
+          <div>
+            <label className="block font-medium">Shift Name</label>
             <input
               type="text"
               name="shiftName"
               value={shift.shiftName}
               onChange={handleChange}
-              className="w-full p-1 border rounded" placeholder="eg-Morning, Night, General"
+              className="w-full border border-gray-300 p-1 rounded bg-gray-100 " placeholder="eg-Morning, Night, General"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-black mb-1">Start Time</label>
+          <div>
+            <label className="block font-medium">Start Time</label>
             <input
               type="time"
               name="startTime"
               value={shift.startTime}
               onChange={handleChange}
-              className="w-full p-1 border rounded"
+              className="w-full border border-gray-300 p-1 rounded bg-gray-100 "
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-black mb-1">End Time</label>
+          <div>
+            <label className="block font-medium">End Time</label>
             <input
               type="time"
               name="endTime"
               value={shift.endTime}
               onChange={handleChange}
-              className="w-full p-1 border rounded"
+              className="w-full border border-gray-300 p-1 rounded bg-gray-100 "
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-black mb-1">Break Duration (minutes)</label>
+          <div>
+            <label className="block font-medium">Break Duration (minutes)</label>
             <input
               type="number"
               name="breakDuration"
               value={shift.breakDuration}
               onChange={handleChange}
-              className="w-full p-1 border rounded"
+              className="w-full border border-gray-300 p-1 rounded bg-gray-100 "
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-black mb-1">Status</label>
+          <div>
+            <label className="block font-medium">Status</label>
             <select
               name="status"
               value={shift.status}
               onChange={handleChange}
-              className="w-full p-1 border rounded"
+              className="w-full border border-gray-300 p-1 rounded bg-gray-100 "
               required
             >
               <option value="Active">Active</option>
@@ -159,7 +160,7 @@ const ShiftMaster = () => {
             </select>
           </div>
 
-          <div className="flex justify-between">
+          <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-between mt-2">
             <BackButton />
             <button
               type="submit"

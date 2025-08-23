@@ -11,6 +11,7 @@ const generateShiftID = async () => {
   return `SHF${String(nextNumber).padStart(2, "0")}`;
 };
 
+// Get next shift ID (API)
 exports.getNextShiftID = async (req, res) => {
   try {
     const code = await generateShiftID();
@@ -20,32 +21,37 @@ exports.getNextShiftID = async (req, res) => {
   }
 };
 
+// Create shift
 exports.createShift = async (req, res) => {
   try {
-    const { shiftID, shiftName, startTime, endTime, breakDuration, status } =
-      req.body;
+    const { shiftName, startTime, endTime, breakDuration, status } = req.body;
 
-    if (!shiftID || !shiftName || !startTime || !endTime || !breakDuration) {
-      return res.status(400).json({ message: "All fields are required" });
+    // Check duplicate by shiftName
+    const existingShift = await Shift.findOne({ shiftName });
+    if (existingShift) {
+      return res.status(400).json({ error: "Shift name already exists" });
     }
 
-    const shift = new Shift({
-      shiftID,
+    // Generate ID
+    const newId = await generateShiftID();
+
+    const newShift = new Shift({
+      shiftID: newId,
       shiftName,
       startTime,
       endTime,
       breakDuration,
       status,
     });
-    const savedShift = await shift.save();
 
-    res.status(201).json(savedShift);
+    await newShift.save();
+    res.status(201).json(newShift);
   } catch (err) {
-    console.error("Save error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to create shift" });
   }
 };
 
+// Get all shifts
 exports.getAllShifts = async (req, res) => {
   try {
     const shifts = await Shift.find();
@@ -56,19 +62,26 @@ exports.getAllShifts = async (req, res) => {
   }
 };
 
+// Update shift
 exports.updateShift = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body; // shiftID bhi allow hai, par overwrite nahi karenge
+    const updateData = { ...req.body };
 
-    //  shiftID ko update hone se rokna
+    // Prevent overwriting shiftID
     if (updateData.shiftID) {
       delete updateData.shiftID;
     }
 
-    const updated = await Shift.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+    // Prevent duplicate shiftName
+    if (updateData.shiftName) {
+      const exists = await Shift.findOne({ shiftName: updateData.shiftName, _id: { $ne: id } });
+      if (exists) {
+        return res.status(400).json({ error: "Shift name already exists" });
+      }
+    }
+
+    const updated = await Shift.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!updated) return res.status(404).json({ message: "Shift not found" });
     res.json(updated);
@@ -77,7 +90,7 @@ exports.updateShift = async (req, res) => {
   }
 };
 
-
+// Delete shift
 exports.deleteShift = async (req, res) => {
   try {
     const shift = await Shift.findByIdAndDelete(req.params.id);

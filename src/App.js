@@ -14,6 +14,8 @@ import HolidayMaster from "./Master/HolidayMaster";
 import HolidayList from "./Master/HolidayList";
 import ShiftMaster from "./Master/Shiftmaster";
 import ShiftList from "./Master/Shiftlist";
+import PolicyMaster from "./Master/Policymaster";
+import PolicyList from "./Master/PolicyList";
 
 
 export default function App(){
@@ -33,6 +35,8 @@ export default function App(){
       <Route path="/HolidayList" element={<HolidayList/>} />
       <Route path="/ShiftMaster" element={<ShiftMaster/>} />
       <Route path="/ShiftList" element={<ShiftList/>} />
+      <Route path="/PolicyMaster" element={<PolicyMaster/>} />
+      <Route path="/PolicyList" element={<PolicyList/>} />
     </Routes>
   );
 }

@@ -1,40 +1,47 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./db/db');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const path = require("path");
+const connectDB = require("./db/db");
+
+// Routes
 const departmentRoutes = require("./routes/departmentRoutes");
 const designationRoutes = require("./routes/designationRoutes");
-const masterRoutes = require('./routes/masterRoutes');
+const masterRoutes = require("./routes/masterRoutes");
 const leaveTypeRoutes = require("./routes/leavetyperoutes");
-const holidayRoutes=require('./routes/holidayRoutes')
+const holidayRoutes = require("./routes/holidayRoutes");
 const shiftRoutes = require("./routes/shiftroutes");
+const policyRoutes = require("./routes/policyRoutes");
 
 dotenv.config();
 connectDB();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Use only one route prefix for master
-app.use('/api/master', masterRoutes);
+//  Serve uploaded files (after app is defined)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Routes
+app.use("/api/master", masterRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/designations", designationRoutes);
 app.use("/api/leavetypes", leaveTypeRoutes);
-app.use("/api/holidays",holidayRoutes);
+app.use("/api/holidays", holidayRoutes);
 app.use("/api/shifts", shiftRoutes);
-
-
-
+app.use("/api/policies", policyRoutes);
 
 // Function to start server with fallback ports
 const startServer = (port) => {
   const server = app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(` Server running on http://localhost:${port}`);
   });
 
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
       console.log(`Port ${port} in use, trying ${port + 1}...`);
       startServer(port + 1);
     } else {
