@@ -8,6 +8,8 @@ import DepartmentList from "./Master/DepartmentList";
 import DepartmentMaster from "./Master/DepartmentMaster";
 import DesignationMaster from "./Master/DesignationMaster";
 import DesignationList from "./Master/DesignationList";
+import LeaveTypeMaster from "./Master/leavetypemaster";
+import LeaveTypeList from "./Master/leavetypelist";
 
 
 export default function App(){
@@ -21,6 +23,8 @@ export default function App(){
       <Route path="/DepartmentMaster" element={<DepartmentMaster/>} />
       <Route path="/DesignationMaster" element={<DesignationMaster/>} />
       <Route path="/DesignationList" element={<DesignationList/>} />
+      <Route path="/LeaveTypeMaster" element={<LeaveTypeMaster/>} />
+      <Route path="/LeaveTypeList" element={<LeaveTypeList/>} />
     </Routes>
   );
 }

@@ -8,7 +8,7 @@ const DepartmentList = () => {
   const [departments, setDepartments] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ Fetch all departments
+  // Fetch all departments
   const fetchDepartments = async () => {
     try {
       const res = await axios.get("http://localhost:5001/api/departments");
@@ -21,7 +21,7 @@ const DepartmentList = () => {
       }));
       setDepartments(formatted);
     } catch (err) {
-      console.error("❌ Failed to fetch departments:", err);
+      console.error("Failed to fetch departments:", err);
     }
   };
 
@@ -29,7 +29,7 @@ const DepartmentList = () => {
     fetchDepartments();
   }, []);
 
-  // ✅ Delete department
+  // Delete department
   const deleteDepartment = async (id) => {
     if (!window.confirm("Are you sure you want to delete this department?"))
       return;
@@ -37,7 +37,7 @@ const DepartmentList = () => {
       await axios.delete(`http://localhost:5001/api/departments/${id}`);
       setDepartments(departments.filter((d) => d._id !== id));
     } catch (err) {
-      console.error("❌ Failed to delete department:", err);
+      console.error("Failed to delete department:", err);
     }
   };
 
@@ -51,9 +51,9 @@ const DepartmentList = () => {
             <BackButton />
             <button
               onClick={() => navigate("/departmentMaster")}
-              className="bg-green-600 text-white px-4 py-1 rounded-lg font-semibold shadow"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-semibold whitespace-nowrap"
             >
-              + Add Department
+               Add Department
             </button>
           </div>
         </div>

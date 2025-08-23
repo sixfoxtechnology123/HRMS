@@ -5,6 +5,7 @@ const connectDB = require('./db/db');
 const departmentRoutes = require("./routes/departmentRoutes");
 const designationRoutes = require("./routes/designationRoutes");
 const masterRoutes = require('./routes/masterRoutes');
+const leaveTypeRoutes = require("./routes/leavetyperoutes");
 
 dotenv.config();
 connectDB();
@@ -17,6 +18,8 @@ app.use(express.json());
 app.use('/api/master', masterRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/designations", designationRoutes);
+app.use("/api/leavetypes", leaveTypeRoutes);
+
 
 // Function to start server with fallback ports
 const startServer = (port) => {

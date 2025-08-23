@@ -41,7 +41,7 @@ const DesignationList = () => {
           <BackButton />
           <button
             onClick={() => navigate('/designationMaster')}
-            className="bg-green-600 text-white px-4 py-1 rounded-lg font-semibold shadow"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-semibold whitespace-nowrap"
           >
             Add Designation
           </button>

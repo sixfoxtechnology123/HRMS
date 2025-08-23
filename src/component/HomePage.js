@@ -12,7 +12,7 @@ const HomePage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 justify-center">
            {/* Admin Panel Box */}
         <div
-          className="group p-12 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-green-100 transition"
+          className="group p-6 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-green-100 transition"
           onClick={() => navigate("/Layout")}
         >
           <FaCogs size={60} className="mx-auto text-green-600" />
@@ -22,7 +22,7 @@ const HomePage = () => {
         </div>
         {/* Master Box */}
         <div
-          className="group p-12 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-blue-100 transition"
+          className="group p-6 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-blue-100 transition"
           onClick={() => navigate("/masterpage")}
         >
           <FaDatabase size={60} className="mx-auto text-blue-600" />
