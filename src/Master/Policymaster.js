@@ -100,7 +100,7 @@ const PolicyMaster = () => {
             type="text"
             value={policyName}
             onChange={(e) => setPolicyName(e.target.value)}
-            className="w-full p-1 border rounded"
+            className="w-full p-1 border rounded" placeholder="eg-Leave Policy, Overtime Policy "
           />
         </div>
 

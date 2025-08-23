@@ -1,6 +1,40 @@
 const Policy = require("../models/policy");
+const path = require("path");
 
-// Auto-generate PolicyID
+// ==================== Helpers ====================
+
+// Format to dd-mm-yyyy (for display)
+const formatDate = (date) => {
+  if (!date) return null;
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+// Convert to yyyy-mm-dd (for <input type="date">)
+const toInputDate = (date) => {
+  if (!date) return null;
+  const d = new Date(date);
+  return d.toISOString().split("T")[0];
+};
+
+// Build file URL
+const fileUrl = (filename) =>
+  filename ? `http://localhost:5001/uploads/${filename}` : null;
+
+// Format policy object for frontend
+const formatPolicy = (policy) => ({
+  ...policy._doc,
+  effectiveDate: toInputDate(policy.effectiveDate),        // for <input>
+  effectiveDateFormatted: formatDate(policy.effectiveDate), // for list display
+  policyDocument: policy.policyDocument || null,           // raw file name (for prefill)
+  policyDocumentUrl: fileUrl(policy.policyDocument),       // full link (view/download)
+});
+
+// ==================== Auto ID ====================
+
 const generatePolicyID = async () => {
   const last = await Policy.findOne().sort({ policyID: -1 });
   let nextNumber = 1;
@@ -8,8 +42,10 @@ const generatePolicyID = async () => {
     const match = last.policyID.match(/POL(\d+)/);
     if (match) nextNumber = parseInt(match[1], 10) + 1;
   }
-  return `POL${String(nextNumber).padStart(4, "0")}`; // POL0001
+  return `POL${String(nextNumber).padStart(4, "0")}`;
 };
+
+// ==================== Controllers ====================
 
 // Get next PolicyID
 exports.getNextPolicyID = async (req, res) => {
@@ -25,24 +61,19 @@ exports.getNextPolicyID = async (req, res) => {
 exports.createPolicy = async (req, res) => {
   try {
     const { policyID, policyName, effectiveDate, status } = req.body;
-    const file = req.file ? req.file.filename : null;
+    const policyDocument = req.file ? req.file.filename : null;
 
-    if (!policyID || !policyName || !effectiveDate) {
-      return res.status(400).json({ message: "All required fields missing" });
-    }
-
-    const policy = new Policy({
+    const newPolicy = new Policy({
       policyID,
       policyName,
-      policyDocument: file,
+      policyDocument,
       effectiveDate,
       status,
     });
 
-    const savedPolicy = await policy.save();
-    res.status(201).json(savedPolicy);
+    await newPolicy.save();
+    res.status(201).json(formatPolicy(newPolicy));
   } catch (err) {
-    console.error("Save error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -51,9 +82,20 @@ exports.createPolicy = async (req, res) => {
 exports.getAllPolicies = async (req, res) => {
   try {
     const policies = await Policy.find();
-    res.json(policies);
+    res.json(policies.map(formatPolicy));
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch policies" });
+  }
+};
+
+// Get Single Policy (for Edit prefill)
+exports.getPolicyById = async (req, res) => {
+  try {
+    const policy = await Policy.findById(req.params.id);
+    if (!policy) return res.status(404).json({ message: "Policy not found" });
+    res.json(formatPolicy(policy));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -63,19 +105,16 @@ exports.updatePolicy = async (req, res) => {
     const { policyName, effectiveDate, status } = req.body;
     const file = req.file ? req.file.filename : undefined;
 
-    const updateData = {
-      policyName,
-      effectiveDate,
-      status,
-    };
-
+    // keep old file if no new upload
+    const updateData = { policyName, effectiveDate, status };
     if (file) updateData.policyDocument = file;
 
     const updated = await Policy.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
     if (!updated) return res.status(404).json({ message: "Policy not found" });
-    res.json(updated);
+
+    res.json(formatPolicy(updated));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -86,6 +125,7 @@ exports.deletePolicy = async (req, res) => {
   try {
     const policy = await Policy.findByIdAndDelete(req.params.id);
     if (!policy) return res.status(404).json({ message: "Policy not found" });
+
     res.json({ message: "Policy deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
