@@ -36,23 +36,25 @@ const HolidayMaster = () => {
 
   const navigate = useNavigate();
   const loc = useLocation();
+useEffect(() => {
+  fetchHolidays();
 
-  useEffect(() => {
-    fetchHolidays();
+  if (loc.state?.holiday) {
+    const h = loc.state.holiday;
+    setHolidayID(h.holidayID || "");
+    setHolidayName(h.holidayName || "");
+    setHolidayDate(toInputDate(h.holidayDate));
+    setLocation(h.location || "All");
+    setStatus(h.status || "Active");
+    setEditId(h._id);
+    setIsEditMode(true);
+  } else {
+    // only for new holiday
     fetchNextHolidayID();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [loc.state]);
 
-    if (loc.state?.holiday) {
-      const h = loc.state.holiday;
-      setHolidayID(h.holidayID || "");
-      setHolidayName(h.holidayName || "");
-      setHolidayDate(toInputDate(h.holidayDate));      // ✅ use h, not editHoliday
-      setLocation(h.location || "All");
-      setStatus(h.status || "Active");
-      setEditId(h._id);
-      setIsEditMode(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loc.state]);
 
   const fetchHolidays = async () => {
     try {

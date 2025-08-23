@@ -17,22 +17,31 @@ const DesignationMaster = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    fetchDepartments();
-    fetchDesignations();
-    fetchNextDesignationID();
+ useEffect(() => {
+  const init = async () => {
+    await fetchDepartments();
+    await fetchDesignations();
 
     if (location.state?.designation) {
+      // EDIT MODE → keep same ID
       const d = location.state.designation;
-      setDesignationID(d.designationID);
+      setDesignationID(d.designationID);  // keep existing ID
       setDesignationName(d.designationName);
       setDepartmentName(d.departmentName);
       setGrade(d.grade);
       setStatus(d.status);
       setEditId(d._id);
       setIsEditMode(true);
+    } else {
+      // ADD MODE → generate new ID
+      setIsEditMode(false);
+      await fetchNextDesignationID();
     }
-  }, [location.state]);
+  };
+
+  init();
+}, [location.state]);
+
 
   const fetchDepartments = async () => {
     try {

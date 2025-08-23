@@ -31,7 +31,7 @@ const ShiftMaster = () => {
     };
 
     if (location.state?.shift) {
-      // ✅ EDIT MODE → keep same ID, don't regenerate
+      // EDIT MODE → keep same ID, don't regenerate
       const s = location.state.shift;
       setIsEditMode(true);
       setShift({
@@ -44,7 +44,7 @@ const ShiftMaster = () => {
         status: s.status || "Active",
       });
     } else {
-      // ✅ ADD MODE → generate new ID
+      // ADD MODE → generate new ID
       setIsEditMode(false);
       fetchNextShiftId();
     }
@@ -62,12 +62,12 @@ const ShiftMaster = () => {
 
     try {
       if (isEditMode) {
-        // ✅ UPDATE → never send shiftID (kept constant)
+        //  UPDATE → never send shiftID (kept constant)
         const { _id, shiftID, ...payload } = shift;
         await axios.put(`http://localhost:5001/api/shifts/${_id}`, payload);
         alert("Shift updated successfully!");
       } else {
-        // ✅ CREATE → include shiftID
+        // CREATE → include shiftID
         await axios.post("http://localhost:5001/api/shifts", shift);
         alert("Shift added successfully!");
       }
