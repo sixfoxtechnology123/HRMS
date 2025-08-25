@@ -14,6 +14,7 @@ const shiftRoutes = require("./routes/shiftroutes");
 const policyRoutes = require("./routes/policyRoutes");
 const locationRoutes = require('./routes/locationroutes');
 const payrollComponentRoutes = require("./routes/payrollComponentRoutes");
+const employeeRoutes = require("./routes/employeeRoutes");
 
 dotenv.config();
 connectDB();
@@ -37,6 +38,7 @@ app.use("/api/shifts", shiftRoutes);
 app.use("/api/policies", policyRoutes);
 app.use('/api/locations', locationRoutes);
 app.use("/api/payrollcomponents", payrollComponentRoutes);
+app.use("/api/employees", employeeRoutes);
 
 // Function to start server with fallback ports
 const startServer = (port) => {

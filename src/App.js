@@ -20,6 +20,8 @@ import LocationMaster from "./Master/LocationMaster";
 import LocationList from "./Master/Locationlist";
 import PayrollComponentMaster from "./Master/PayrollComponentMaster";
 import PayrollComponentList from "./Master/PayrollComponentList";
+import EmployeeMaster from "./Master/EmployeeMaster";
+import EmployeeList from "./Master/EmployeeList";
 
 
 export default function App(){
@@ -45,6 +47,8 @@ export default function App(){
       <Route path="/LocationList" element={<LocationList/>} />
       <Route path="/PayrollComponentMaster" element={<PayrollComponentMaster/>} />
       <Route path="/PayrollComponentList" element={<PayrollComponentList/>} />
+      <Route path="/EmployeeMaster" element={<EmployeeMaster/>} />
+      <Route path="/EmployeeList" element={<EmployeeList/>} />
     </Routes>
   );
 }
