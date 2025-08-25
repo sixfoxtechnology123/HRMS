@@ -39,7 +39,7 @@ const HomePage = () => {
         >
           <FaUserPlus size={60} className="mx-auto text-yellow-600" />
           <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
-            Add Employee
+            New Employee
           </h2>
         </div>
       </div>
