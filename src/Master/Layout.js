@@ -34,7 +34,7 @@ export default function Layout() {
           </button>
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-indigo-600 text-white">SF</div>
-            <div className="text-lg font-semibold">SixFox HRMS</div>
+            <div className="text-lg font-semibold">HRMS</div>
           </div>
         </div>
 
