@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaClinicMedical, FaUserTie, FaCalendarCheck, FaRegCalendarAlt, FaClock, FaFileContract,FaMapMarkerAlt } from "react-icons/fa"; 
+import { FaClinicMedical, FaUserTie, FaCalendarCheck, FaRegCalendarAlt, FaClock, FaFileContract,FaMapMarkerAlt,FaMoneyBillWave } from "react-icons/fa"; 
 import BackButton from "../component/BackButton"; // adjust path if needed
 
 const MasterPage = () => {
@@ -82,6 +82,16 @@ const MasterPage = () => {
           <FaMapMarkerAlt size={60} className="mx-auto text-indigo-600" />
           <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
             Location
+          </h2>
+        </div>
+        {/* Payroll Component Box */}
+        <div
+          className="group p-4 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-teal-200 transition"
+          onClick={() => navigate("/PayrollComponentList")}
+        >
+          <FaMoneyBillWave size={60} className="mx-auto text-teal-600" />
+          <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
+            Payroll Component
           </h2>
         </div>
       </div>

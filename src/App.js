@@ -18,6 +18,8 @@ import PolicyMaster from "./Master/Policymaster";
 import PolicyList from "./Master/PolicyList";
 import LocationMaster from "./Master/LocationMaster";
 import LocationList from "./Master/Locationlist";
+import PayrollComponentMaster from "./Master/PayrollComponentMaster";
+import PayrollComponentList from "./Master/PayrollComponentList";
 
 
 export default function App(){
@@ -41,6 +43,8 @@ export default function App(){
       <Route path="/PolicyList" element={<PolicyList/>} />
       <Route path="/LocationMaster" element={<LocationMaster/>} />
       <Route path="/LocationList" element={<LocationList/>} />
+      <Route path="/PayrollComponentMaster" element={<PayrollComponentMaster/>} />
+      <Route path="/PayrollComponentList" element={<PayrollComponentList/>} />
     </Routes>
   );
 }
