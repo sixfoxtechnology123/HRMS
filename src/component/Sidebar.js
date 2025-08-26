@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
-  Home,
+  // Home,
   LayoutDashboard,
   Users,
   Building2,
@@ -23,7 +23,7 @@ const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menus = [
-    { name: "Home", path: "/Homepage", icon: Home },
+    // { name: "Home", path: "/Homepage", icon: Home },
     { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard }, 
     { name: "New Employee Reg", path: "/EmployeeList", icon: Users },
     { name: "Departments", path: "/DepartmentList", icon: Building2 },

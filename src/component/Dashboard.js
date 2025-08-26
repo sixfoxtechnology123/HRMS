@@ -146,7 +146,7 @@ const Dashboard = () => {
   <Sidebar />
 
   {/* Main Content */}
-  <main className="flex-1 bg-gray-100 min-h-screen p-6 w-full">
+  <main className="flex-1 bg-green-100 min-h-screen p-6 w-full">
     <header className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
