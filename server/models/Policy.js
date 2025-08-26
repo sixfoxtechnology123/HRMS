@@ -8,5 +8,7 @@ const policySchema = new mongoose.Schema({
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" }
 });
 
-module.exports = mongoose.model("Policy_Master", policySchema);
+module.exports =
+  mongoose.models.Policy_Master ||
+  mongoose.model("Policy_Master", policySchema);
 

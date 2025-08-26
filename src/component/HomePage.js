@@ -13,11 +13,11 @@ const HomePage = () => {
         {/* Admin Panel Box */}
         <div
           className="group p-6 bg-white shadow-lg rounded-xl text-center cursor-pointer hover:bg-green-100 transition"
-          onClick={() => navigate("/Layout")}
+          onClick={() => navigate("/Dashboard")}
         >
           <FaCogs size={60} className="mx-auto text-green-600" />
           <h2 className="mt-6 text-2xl font-semibold transform transition-transform duration-300 group-hover:-translate-y-1">
-            Admin Panel
+            Dashboard
           </h2>
         </div>
 

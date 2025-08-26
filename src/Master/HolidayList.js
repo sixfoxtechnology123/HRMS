@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import BackButton from "../component/BackButton";
+import Sidebar from '../component/Sidebar';
+
 
 const HolidayList = () => {
   const [holidays, setHolidays] = useState([]);
@@ -32,7 +34,10 @@ const HolidayList = () => {
   };
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-md">
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <Sidebar/>
+    <div className="flex-1 overflow-y-auto">
+    <div className="p-3 bg-white shadow-md rounded-md">
       <div className="bg-green-50 border border-green-300 rounded-lg shadow-md p-2 mb-4 flex justify-between items-center">
         <h2 className="text-xl font-bold text-green-800">Holiday List</h2>
         <div className="flex gap-2">
@@ -98,6 +103,8 @@ const HolidayList = () => {
         </tbody>
       </table>
     </div>
+    </div>
+ </div>
   );
 };
 

@@ -9,4 +9,6 @@ const leaveTypeSchema = new mongoose.Schema({
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
 });
 
-module.exports = mongoose.model("Leave_Type_Master", leaveTypeSchema);
+module.exports =
+  mongoose.models.Leave_Type_Master ||
+  mongoose.model("Leave_Type_Master", leaveTypeSchema);

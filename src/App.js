@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Layout from "./Master/Layout";
 import HomePage from "./component/HomePage";
 import BackButton from "./component/BackButton";
 import MasterPage from "./Master/MasterPage";
@@ -22,12 +21,12 @@ import PayrollComponentMaster from "./Master/PayrollComponentMaster";
 import PayrollComponentList from "./Master/PayrollComponentList";
 import EmployeeMaster from "./Master/EmployeeMaster";
 import EmployeeList from "./Master/EmployeeList";
+import Dashboard from "./component/Dashboard";
 
 
 export default function App(){
   return (
     <Routes>
-      <Route path="/Layout" element={<Layout/>} />
       <Route path="/" element={<HomePage/>} />
       <Route path="/BackButton" element={<BackButton/>} />
       <Route path="/MasterPage" element={<MasterPage/>} />
@@ -49,6 +48,7 @@ export default function App(){
       <Route path="/PayrollComponentList" element={<PayrollComponentList/>} />
       <Route path="/EmployeeMaster" element={<EmployeeMaster/>} />
       <Route path="/EmployeeList" element={<EmployeeList/>} />
+      <Route path="/Dashboard" element={<Dashboard/>} />
     </Routes>
   );
 }
