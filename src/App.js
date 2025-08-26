@@ -22,12 +22,13 @@ import PayrollComponentList from "./Master/PayrollComponentList";
 import EmployeeMaster from "./Master/EmployeeMaster";
 import EmployeeList from "./Master/EmployeeList";
 import Dashboard from "./component/Dashboard";
+import AdminLogin from "./component/AdminLogin";
 
 
 export default function App(){
   return (
     <Routes>
-      <Route path="/" element={<HomePage/>} />
+      <Route path="/Homepage" element={<HomePage/>} />
       <Route path="/BackButton" element={<BackButton/>} />
       <Route path="/MasterPage" element={<MasterPage/>} />
       <Route path="/DepartmentList" element={<DepartmentList/>} />
@@ -49,6 +50,7 @@ export default function App(){
       <Route path="/EmployeeMaster" element={<EmployeeMaster/>} />
       <Route path="/EmployeeList" element={<EmployeeList/>} />
       <Route path="/Dashboard" element={<Dashboard/>} />
+      <Route path="/" element={<AdminLogin/>} />
     </Routes>
   );
 }
