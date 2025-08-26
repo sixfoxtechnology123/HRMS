@@ -4,12 +4,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const AdminLogin = () => {
-  const [userId, setUserId] = useState(""); // using userId instead of email
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Login function
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,12 +19,16 @@ const AdminLogin = () => {
         password,
       });
 
-      if (res.data.token) {
-        // Login successful
-        localStorage.setItem("token", res.data.token); // store JWT token
-        navigate("/Homepage"); // redirect after login
+      if (res.data.token && res.data.admin) {
+        // Store JWT token
+        localStorage.setItem("token", res.data.token);
+
+        // Store admin info in localStorage
+        localStorage.setItem("adminData", JSON.stringify(res.data.admin));
+
+        // Redirect after login
+        navigate("/Dashboard");
       } else {
-        // Login failed
         setError(res.data.message || "Invalid credentials");
       }
     } catch (err) {
@@ -36,19 +39,13 @@ const AdminLogin = () => {
 
   return (
     <div className="h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
-      {/* Background 3D circles */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-purple-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
 
-      {/* Login Card */}
       <div className="relative z-10 bg-white/10 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-[90%] sm:w-[400px] border border-white/20">
-        <h1 className="text-3xl font-bold text-white text-center mb-6">
-          Admin Login
-        </h1>
+        <h1 className="text-3xl font-bold text-white text-center mb-6">Admin Login</h1>
 
-        {error && (
-          <p className="text-red-400 text-center mb-3 text-sm">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-center mb-3 text-sm">{error}</p>}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>

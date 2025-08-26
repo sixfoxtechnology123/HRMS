@@ -23,6 +23,9 @@ import EmployeeMaster from "./Master/EmployeeMaster";
 import EmployeeList from "./Master/EmployeeList";
 import Dashboard from "./component/Dashboard";
 import AdminLogin from "./component/AdminLogin";
+import EditProfile from "./component/EditProfile";
+import ChangePassword from "./component/ChangePassword";
+
 
 
 export default function App(){
@@ -51,6 +54,10 @@ export default function App(){
       <Route path="/EmployeeList" element={<EmployeeList/>} />
       <Route path="/Dashboard" element={<Dashboard/>} />
       <Route path="/" element={<AdminLogin/>} />
+      <Route path="/EditProfile" element={<EditProfile/>} />
+      <Route path="/ChangePassword" element={<ChangePassword/>} />
+ 
+
     </Routes>
   );
 }

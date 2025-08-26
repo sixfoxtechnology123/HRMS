@@ -55,7 +55,7 @@ const createDefaultAdmin = async () => {
         userId: "admin",
         password: hashedPassword,
       });
-      //console.log("Default admin created: userId=admin, password=admin123");
+      console.log("Default admin created: userId=admin, password=admin123");
     } else {
       console.log("Admin already exists");
     }
