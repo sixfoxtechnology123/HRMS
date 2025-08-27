@@ -19,6 +19,7 @@ const payrollComponentRoutes = require("./routes/payrollComponentRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const activityRoutes = require("./routes/activityRoutes");
 
 dotenv.config();
 
@@ -44,7 +45,7 @@ app.use("/api/payrollcomponents", payrollComponentRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/dashboard/activities", activityRoutes);
 // Function to create default admin if not exists
 const createDefaultAdmin = async () => {
   try {

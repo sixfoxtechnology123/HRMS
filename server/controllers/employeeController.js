@@ -1,4 +1,5 @@
 const Employee = require("../models/Employee");
+const Activity = require("../models/Activity"); 
 
 // ---- Auto-generate EmployeeID: EMP0001, EMP0002, ...
 const generateEmployeeID = async () => {
@@ -31,6 +32,14 @@ exports.createEmployee = async (req, res) => {
 
     const emp = new Employee({ ...req.body });
     const saved = await emp.save();
+      // Log activity
+    try {
+      await Activity.create({
+        text: `Employee Added: ${saved.firstName} ${saved.lastName} (${saved.employeeID})`,
+      });
+    } catch (logErr) {
+      console.error("Activity log error (createEmployee):", logErr);
+    }
     res.status(201).json(saved);
   } catch (e) {
     console.error("Create employee error:", e);
@@ -66,6 +75,15 @@ exports.updateEmployee = async (req, res) => {
   try {
     const updated = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: "Employee not found" });
+     //  Log activity
+    try {
+      await Activity.create({
+        text: `Employee Updated: ${updated.firstName} ${updated.lastName} (${updated.employeeID})`,
+      });
+    } catch (logErr) {
+      console.error("Activity log error (updateEmployee):", logErr);
+    }
+
     res.json(updated);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -77,6 +95,15 @@ exports.deleteEmployee = async (req, res) => {
   try {
     const del = await Employee.findByIdAndDelete(req.params.id);
     if (!del) return res.status(404).json({ message: "Employee not found" });
+     //  Log activity
+    try {
+      await Activity.create({
+        text: `Employee Deleted: ${del.firstName} ${del.lastName} (${del.employeeID})`,
+      });
+    } catch (logErr) {
+      console.error("Activity log error (deleteEmployee):", logErr);
+    }
+    
     res.json({ message: "Employee deleted successfully" });
   } catch (e) {
     res.status(500).json({ error: e.message });

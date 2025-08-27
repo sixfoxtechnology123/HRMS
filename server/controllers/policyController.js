@@ -1,4 +1,6 @@
+// controllers/policyController.js
 const Policy = require("../models/policy");
+const Activity = require("../models/Activity"); // Import Activity model
 const path = require("path");
 
 // ==================== Helpers ====================
@@ -29,8 +31,8 @@ const formatPolicy = (policy) => ({
   ...policy._doc,
   effectiveDate: toInputDate(policy.effectiveDate),        // for <input>
   effectiveDateFormatted: formatDate(policy.effectiveDate), // for list display
-  policyDocument: policy.policyDocument || null,           // raw file name (for prefill)
-  policyDocumentUrl: fileUrl(policy.policyDocument),       // full link (view/download)
+  policyDocument: policy.policyDocument || null,           // raw file name
+  policyDocumentUrl: fileUrl(policy.policyDocument),       // full link
 });
 
 // ==================== Auto ID ====================
@@ -72,6 +74,17 @@ exports.createPolicy = async (req, res) => {
     });
 
     await newPolicy.save();
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Policy created: ${policyName} (${policyID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.status(201).json(formatPolicy(newPolicy));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -114,6 +127,16 @@ exports.updatePolicy = async (req, res) => {
     });
     if (!updated) return res.status(404).json({ message: "Policy not found" });
 
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Policy updated: ${updated.policyName} (${updated.policyID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json(formatPolicy(updated));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -125,6 +148,16 @@ exports.deletePolicy = async (req, res) => {
   try {
     const policy = await Policy.findByIdAndDelete(req.params.id);
     if (!policy) return res.status(404).json({ message: "Policy not found" });
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Policy deleted: ${policy.policyName} (${policy.policyID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
 
     res.json({ message: "Policy deleted successfully" });
   } catch (err) {

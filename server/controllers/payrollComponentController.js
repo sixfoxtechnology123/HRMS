@@ -1,5 +1,5 @@
-// controllers/payrollComponentController.js
 const PayrollComponent = require("../models/Payroll");
+const Activity = require("../models/Activity"); // Import Activity model
 
 // Auto-generate ComponentID
 const generateComponentID = async () => {
@@ -43,6 +43,17 @@ exports.createComponent = async (req, res) => {
     });
 
     const saved = await component.save();
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Payroll component created: ${componentName} (${componentID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.status(201).json(saved);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -64,6 +75,17 @@ exports.updateComponent = async (req, res) => {
   try {
     const updated = await PayrollComponent.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: "Component not found" });
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Payroll component updated: ${updated.componentName} (${updated.componentID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -75,6 +97,17 @@ exports.deleteComponent = async (req, res) => {
   try {
     const deleted = await PayrollComponent.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Component not found" });
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Payroll component deleted: ${deleted.componentName} (${deleted.componentID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json({ message: "Component deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

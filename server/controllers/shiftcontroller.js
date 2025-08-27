@@ -1,4 +1,6 @@
+// controllers/shiftController.js
 const Shift = require("../models/Shift");
+const Activity = require("../models/Activity"); // Import Activity model
 
 // Auto-generate ShiftID
 const generateShiftID = async () => {
@@ -45,6 +47,17 @@ exports.createShift = async (req, res) => {
     });
 
     await newShift.save();
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Shift created: ${shiftName} (${newId})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.status(201).json(newShift);
   } catch (err) {
     res.status(500).json({ error: "Failed to create shift" });
@@ -69,21 +82,27 @@ exports.updateShift = async (req, res) => {
     const updateData = { ...req.body };
 
     // Prevent overwriting shiftID
-    if (updateData.shiftID) {
-      delete updateData.shiftID;
-    }
+    if (updateData.shiftID) delete updateData.shiftID;
 
     // Prevent duplicate shiftName
     if (updateData.shiftName) {
       const exists = await Shift.findOne({ shiftName: updateData.shiftName, _id: { $ne: id } });
-      if (exists) {
-        return res.status(400).json({ error: "Shift name already exists" });
-      }
+      if (exists) return res.status(400).json({ error: "Shift name already exists" });
     }
 
     const updated = await Shift.findByIdAndUpdate(id, updateData, { new: true });
-
     if (!updated) return res.status(404).json({ message: "Shift not found" });
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Shift updated: ${updated.shiftName} (${updated.shiftID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -95,6 +114,17 @@ exports.deleteShift = async (req, res) => {
   try {
     const shift = await Shift.findByIdAndDelete(req.params.id);
     if (!shift) return res.status(404).json({ message: "Shift not found" });
+
+    // Log activity
+    try {
+      await Activity.create({
+        text: `Shift deleted: ${shift.shiftName} (${shift.shiftID})`,
+        createdAt: new Date(),
+      });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json({ message: "Shift deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

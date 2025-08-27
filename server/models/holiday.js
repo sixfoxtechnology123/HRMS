@@ -8,4 +8,4 @@ const holidaySchema = new mongoose.Schema({
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
 });
 
-module.exports = mongoose.model("Holiday_Master", holidaySchema);
+module.exports =   mongoose.models.Holiday_Master || mongoose.model("Holiday_Master", holidaySchema);

@@ -1,4 +1,5 @@
 const LeaveType = require("../models/LeaveType");
+const Activity = require("../models/Activity");
 
 // Auto-generate LeaveTypeID
 const generateLeaveTypeID = async () => {
@@ -40,6 +41,14 @@ exports.createLeaveType = async (req, res) => {
     });
 
     const savedLeaveType = await leaveType.save();
+
+    // Log activity
+    try {
+      await Activity.create({ text: `Leave Type Added: ${savedLeaveType.leaveName} (${savedLeaveType.leaveTypeID})` });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.status(201).json(savedLeaveType);
   } catch (err) {
     console.error("Save error:", err);
@@ -63,6 +72,14 @@ exports.updateLeaveType = async (req, res) => {
   try {
     const updated = await LeaveType.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: "Leave type not found" });
+
+    // Log activity
+    try {
+      await Activity.create({ text: `Leave Type Updated: ${updated.leaveName} (${updated.leaveTypeID})` });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -74,6 +91,14 @@ exports.deleteLeaveType = async (req, res) => {
   try {
     const leaveType = await LeaveType.findByIdAndDelete(req.params.id);
     if (!leaveType) return res.status(404).json({ message: "Leave type not found" });
+
+    // Log activity
+    try {
+      await Activity.create({ text: `Leave Type Deleted: ${leaveType.leaveName} (${leaveType.leaveTypeID})` });
+    } catch (err) {
+      console.error("Activity log failed:", err.message);
+    }
+
     res.json({ message: "Leave type deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

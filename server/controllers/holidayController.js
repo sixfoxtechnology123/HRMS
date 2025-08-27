@@ -1,4 +1,5 @@
-const Holiday = require("../models/holiday");
+const Holiday = require("../models/Holiday");
+const Activity = require("../models/Activity");
 
 // Auto-generate HolidayID
 const generateHolidayID = async () => {
@@ -26,7 +27,7 @@ exports.createHoliday = async (req, res) => {
   try {
     const { holidayID, holidayName, holidayDate, location, status } = req.body;
     if (!holidayID || !holidayName || !holidayDate) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All required fields must be provided" });
     }
 
     const holiday = new Holiday({
@@ -36,7 +37,16 @@ exports.createHoliday = async (req, res) => {
       location,
       status,
     });
+
     const savedHoliday = await holiday.save();
+
+    // Activity log
+    try {
+      await Activity.create({ text: `Holiday Added: ${savedHoliday.holidayName} (${savedHoliday.holidayID})` });
+    } catch (logErr) {
+      console.error("Activity log failed:", logErr.message);
+    }
+
     res.status(201).json(savedHoliday);
   } catch (err) {
     console.error("Save error:", err);
@@ -57,16 +67,16 @@ exports.getAllHolidays = async (req, res) => {
       const year = d.getFullYear();
       return {
         ...h._doc,
-        holidayDate: `${day}-${month}-${year}`, // <-- formatted
+        holidayDate: `${day}-${month}-${year}`, // formatted
       };
     });
 
     res.json(formatted);
   } catch (err) {
+    console.error("Fetch error:", err.message);
     res.status(500).json({ error: "Failed to fetch holidays" });
   }
 };
-
 
 // Update Holiday
 exports.updateHoliday = async (req, res) => {
@@ -75,6 +85,14 @@ exports.updateHoliday = async (req, res) => {
       new: true,
     });
     if (!updated) return res.status(404).json({ message: "Holiday not found" });
+
+    // Activity log
+    try {
+      await Activity.create({ text: `Holiday Updated: ${updated.holidayName} (${updated.holidayID})` });
+    } catch (logErr) {
+      console.error("Activity log failed:", logErr.message);
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -86,6 +104,14 @@ exports.deleteHoliday = async (req, res) => {
   try {
     const holiday = await Holiday.findByIdAndDelete(req.params.id);
     if (!holiday) return res.status(404).json({ message: "Holiday not found" });
+
+    // Activity log
+    try {
+      await Activity.create({ text: `Holiday Deleted: ${holiday.holidayName} (${holiday.holidayID})` });
+    } catch (logErr) {
+      console.error("Activity log failed:", logErr.message);
+    }
+
     res.json({ message: "Holiday deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
