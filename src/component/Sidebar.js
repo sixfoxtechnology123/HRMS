@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-  // Home,
   LayoutDashboard,
   Users,
   Building2,
@@ -16,15 +15,16 @@ import {
   X,
   ArrowBigRightDash,
   ArrowBigLeftDash,
+  LogOut,
 } from "lucide-react";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menus = [
-    // { name: "Home", path: "/Homepage", icon: Home },
-    { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard }, 
+    { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard },
     { name: "New Employee Reg", path: "/EmployeeList", icon: Users },
     { name: "Departments", path: "/DepartmentList", icon: Building2 },
     { name: "Designations", path: "/DesignationList", icon: Briefcase },
@@ -34,7 +34,14 @@ const Sidebar = () => {
     { name: "Policies", path: "/PolicyList", icon: FileText },
     { name: "Locations", path: "/LocationList", icon: MapPin },
     { name: "Payroll", path: "/PayrollComponentList", icon: Wallet },
+    { name: "Admin Management", path: "/AdminManagement", icon: Users },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminData");
+    localStorage.removeItem("token");
+    navigate("/");
+  };
 
   return (
     <>
@@ -54,50 +61,70 @@ const Sidebar = () => {
         ${isOpen ? "md:w-56" : "md:w-16"} 
         md:min-h-screen`}
       >
-        {/* Top Controls */}
-        <div className="flex items-center justify-between mb-1 p-1">
-          <button
-            className="hidden md:block text-white"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <ArrowBigLeftDash size={22} /> : <ArrowBigRightDash size={22} />}
-          </button>
-          <button
-            className="md:hidden text-white ml-auto"
-            onClick={() => setMobileOpen(false)}
-          >
-            <X size={28} />
-          </button>
+        {/* Sidebar Content with flex layout */}
+        <div className="flex flex-col h-full">
+          {/* Top Controls */}
+          <div className="flex items-center justify-between mb-1 p-1">
+            <button
+              className="hidden md:block text-white"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? (
+                <ArrowBigLeftDash size={22} />
+              ) : (
+                <ArrowBigRightDash size={22} />
+              )}
+            </button>
+            <button
+              className="md:hidden text-white ml-auto"
+              onClick={() => setMobileOpen(false)}
+            >
+              <X size={28} />
+            </button>
+          </div>
+
+          {isOpen && (
+            <h2 className="hidden md:block text-2xl font-bold mb-1 px-4">
+              HRMS
+            </h2>
+          )}
+
+          {/* Menu Links with scroll */}
+          <ul className="space-y-2 px-2 flex-1 overflow-y-auto">
+            {menus.map((menu, i) => {
+              const Icon = menu.icon;
+              return (
+                <li key={i}>
+                  <NavLink
+                    to={menu.path}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 p-1 rounded transition-colors ${
+                        isActive
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-gray-700"
+                      }`
+                    }
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon size={20} />
+                    {isOpen && <span>{menu.name}</span>}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Logout Button pinned at bottom */}
+          <div className="px-2 mb-4">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full bg-red-600 text-white p-1 rounded transition"
+            >
+              <LogOut size={20} />
+              {isOpen && <span>Logout</span>}
+            </button>
+          </div>
         </div>
-
-        {isOpen && (
-          <h2 className="hidden md:block text-2xl font-bold mb-1 px-4">
-            HRMS
-          </h2>
-        )}
-
-        {/* Menu Links */}
-        <ul className="space-y-2 px-2">
-          {menus.map((menu, i) => {
-            const Icon = menu.icon;
-            return (
-              <li key={i}>
-                <NavLink
-                  to={menu.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 p-1 rounded transition-colors ${
-                      isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
-                    }`
-                  }
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <Icon size={20} />
-                  {isOpen && <span>{menu.name}</span>}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
       </div>
 
       {/* Mobile Overlay */}

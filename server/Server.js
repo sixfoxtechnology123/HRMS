@@ -20,6 +20,8 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const activityRoutes = require("./routes/activityRoutes");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 dotenv.config();
 
@@ -46,6 +48,10 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
+app.use("/api/auth", authRoutes);   // login route for all users
+app.use("/api/users", userRoutes);  // admin creates/manages users
+
+
 // Function to create default admin if not exists
 const createDefaultAdmin = async () => {
   try {

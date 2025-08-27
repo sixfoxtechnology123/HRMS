@@ -25,6 +25,7 @@ import Dashboard from "./component/Dashboard";
 import AdminLogin from "./component/AdminLogin";
 import EditProfile from "./component/EditProfile";
 import ChangePassword from "./component/ChangePassword";
+import AdminManagement from "./component/AdminManagement";
 
 
 
@@ -56,6 +57,7 @@ export default function App(){
       <Route path="/" element={<AdminLogin/>} />
       <Route path="/EditProfile" element={<EditProfile/>} />
       <Route path="/ChangePassword" element={<ChangePassword/>} />
+      <Route path="/AdminManagement" element={<AdminManagement/>} />
  
 
     </Routes>
