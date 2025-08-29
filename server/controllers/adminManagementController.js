@@ -3,30 +3,45 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AdminManagement = require('../models/adminManagementModel');
 
-// LOGIN
+// ======================= LOGIN =======================
 const login = async (req, res) => {
   try {
-    const { userId, password } = req.body;
+    let { userId, password } = req.body;
+    userId = userId?.trim();
+    password = password?.trim();
+
+    if (!userId || !password)
+      return res.status(400).json({ message: "User ID and password are required" });
+
     const user = await AdminManagement.findOne({ userId });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "Invalid User ID" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid password' });
+    if (!isMatch) return res.status(401).json({ message: "Invalid password" });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },   // include role for middleware
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
 
-    return res.json({ token, user: { _id: user._id, userId: user.userId, name: user.name, role: user.role, permissions: user.permissions } });
+    return res.json({
+      token,
+      user: {
+        _id: user._id,
+        userId: user.userId,
+        name: user.name,
+        role: user.role,
+        permissions: user.permissions || []
+      }
+    });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ message: 'Login failed', error: err.message });
+    return res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
 
-// GET ALL USERS
+// ======================= GET ALL USERS =======================
 const getUsers = async (req, res) => {
   try {
     const users = await AdminManagement.find().select('-password');
@@ -36,11 +51,16 @@ const getUsers = async (req, res) => {
   }
 };
 
-// CREATE USER
+// ======================= CREATE USER =======================
 const createUser = async (req, res) => {
   try {
-    const { userId, name, password, role, permissions } = req.body;
-    if (!userId || !name || !password) return res.status(400).json({ message: 'Missing required fields' });
+    let { userId, name, password, role, permissions } = req.body;
+    userId = userId?.trim();
+    name = name?.trim();
+    password = password?.trim();
+
+    if (!userId || !name || !password)
+      return res.status(400).json({ message: 'Missing required fields' });
 
     const existing = await AdminManagement.findOne({ userId });
     if (existing) return res.status(400).json({ message: 'User ID already exists' });
@@ -58,14 +78,20 @@ const createUser = async (req, res) => {
 
     res.status(201).json({
       message: 'New User Added',
-      user: { _id: newUser._id, userId, name, role: newUser.role, permissions: newUser.permissions }
+      user: {
+        _id: newUser._id,
+        userId: newUser.userId,
+        name: newUser.name,
+        role: newUser.role,
+        permissions: newUser.permissions
+      }
     });
   } catch (err) {
     res.status(500).json({ message: 'Error creating user', error: err.message });
   }
 };
 
-// UPDATE USER
+// ======================= UPDATE USER =======================
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,20 +99,31 @@ const updateUser = async (req, res) => {
     const user = await AdminManagement.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    user.userId = userId || user.userId;
-    user.name = name || user.name;
+    user.userId = userId?.trim() || user.userId;
+    user.name = name?.trim() || user.name;
     user.role = role || user.role;
     user.permissions = permissions || user.permissions;
-    if (password) user.password = await bcrypt.hash(password, 10);
+
+    if (password) user.password = await bcrypt.hash(password.trim(), 10);
 
     await user.save();
-    res.json({ message: 'User updated', user: { _id: user._id, userId: user.userId, name: user.name, role: user.role, permissions: user.permissions } });
+
+    res.json({
+      message: 'User updated',
+      user: {
+        _id: user._id,
+        userId: user.userId,
+        name: user.name,
+        role: user.role,
+        permissions: user.permissions
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: 'Error updating user', error: err.message });
   }
 };
 
-// DELETE USER
+// ======================= DELETE USER =======================
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;

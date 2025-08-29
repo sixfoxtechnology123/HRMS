@@ -4,10 +4,10 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./db/db");
-const Admin = require("./models/Admin");
 const bcrypt = require("bcryptjs");
+const AdminManagement = require("./models/adminManagementModel"); // ✅ use AdminManagement
 
-//  Load .env at the very top so JWT_SECRET, MONGO_URI, PORT are available
+//  Load .env
 dotenv.config();
 
 // Routes
@@ -31,8 +31,6 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
@@ -51,16 +49,18 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
 app.use("/api/adminManagement", adminManagementRoutes);
 
-// Create default admin if not exists
+// ✅ Create default admin in AdminManagement collection
 const createDefaultAdmin = async () => {
   try {
-    const adminExists = await Admin.findOne({ userId: "admin" });
+    const adminExists = await AdminManagement.findOne({ userId: "admin" });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
-      await Admin.create({
+      await AdminManagement.create({
         userId: "admin",
+        name: "Main Admin",
         password: hashedPassword,
-        role: "Admin", // ✅ ensure role exists so JWT can use it
+        role: "Admin",
+        permissions: ["all"], // optional
       });
       console.log("Default admin created: userId=admin, password=admin123");
     } else {
@@ -71,27 +71,16 @@ const createDefaultAdmin = async () => {
   }
 };
 
-//  Start server
+// Start server
 const startServer = async () => {
   try {
     await connectDB();
     await createDefaultAdmin();
 
     const PORT = process.env.PORT || 5001;
-    const server = app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-
-    server.on("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        console.log(`Port ${PORT} in use, trying ${PORT + 1}...`);
-        startServer(PORT + 1);
-      } else {
-        console.error(err);
-      }
-    });
-  } catch (error) {
-    console.error("Server failed to start:", error);
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  } catch (err) {
+    console.error("Server failed to start:", err);
   }
 };
 

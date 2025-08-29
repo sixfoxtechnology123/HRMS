@@ -14,37 +14,32 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:5001/api/admin/login", {
-        userId,
-        password,
+      const res = await axios.post("http://localhost:5001/api/adminManagement/login", {
+        userId: userId.trim(),
+        password: password.trim(),
       });
 
       if (res.data.token) {
-        // Save JWT token
         localStorage.setItem("token", res.data.token);
-
-        // Save admin details (optional)
-        localStorage.setItem("adminData", JSON.stringify(res.data.admin));
-
-        // Redirect to dashboard
+        localStorage.setItem("adminData", JSON.stringify(res.data.user));
+        localStorage.setItem(
+          "userPermissions",
+          JSON.stringify(res.data.user.permissions || [])
+        );
         navigate("/Dashboard");
       } else {
         setError("Invalid credentials");
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.msg || "Login failed. Please try again.");
+      setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
   return (
-    <div className="h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
-      <div className="absolute top-10 left-10 w-72 h-72 bg-purple-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-
+    <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
       <div className="relative z-10 bg-white/10 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-[90%] sm:w-[400px] border border-white/20">
         <h1 className="text-3xl font-bold text-white text-center mb-6">Admin Login</h1>
-
         {error && <p className="text-red-400 text-center mb-3 text-sm">{error}</p>}
 
         <form onSubmit={handleLogin} className="space-y-5">

@@ -132,7 +132,7 @@ export default function AdminManagement() {
     setNewUser({
       userId: user.userId,
       name: user.name,
-      password: "", // password optional
+      password: "", // password optional on edit
       role: user.role,
       permissions: user.permissions || [],
     });
