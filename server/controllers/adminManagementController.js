@@ -42,9 +42,10 @@ const login = async (req, res) => {
 };
 
 // ======================= GET ALL USERS =======================
+// Exclude main admin from table
 const getUsers = async (req, res) => {
   try {
-    const users = await AdminManagement.find().select('-password');
+    const users = await AdminManagement.find({ isDefault: { $ne: true } }).select('-password');
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching users', error: err.message });
@@ -72,7 +73,8 @@ const createUser = async (req, res) => {
       name,
       password: hashed,
       role: role || 'HR',
-      permissions: permissions || []
+      permissions: permissions || [],
+      createdBy: req.user?.id || null // optional: track who created
     });
     await newUser.save();
 

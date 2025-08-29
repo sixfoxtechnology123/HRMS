@@ -61,6 +61,7 @@ const createDefaultAdmin = async () => {
         password: hashedPassword,
         role: "Admin",
         permissions: ["all"], // optional
+         isDefault: true
       });
       console.log("Default admin created: userId=admin, password=admin123");
     } else {

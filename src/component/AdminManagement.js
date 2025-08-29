@@ -36,13 +36,37 @@ export default function AdminManagement() {
 
   const token = localStorage.getItem("token");
 
+  // ---- NEW: robust main-admin detector + toggle to hide row ----
+  const HIDE_MAIN_ADMIN = false; // set true to hide the row instead of disabling buttons
+  const isMainAdmin = (u) => {
+    // prefers backend flag; also handles string "true"
+    const flag =
+      u?.isDefault === true ||
+      u?.isDefault === "true" ||
+      u?.isDefault === 1 ||
+      u?.is_default === true ||
+      u?.is_default === "true";
+    // fallbacks in case API didn't include isDefault but your main admin is obvious
+    const idGuess =
+      typeof u?.userId === "string" &&
+      ["admin", "superadmin", "mainadmin", "root"].includes(
+        u.userId.trim().toLowerCase()
+      );
+    const roleGuess =
+      typeof u?.role === "string" &&
+      ["admin", "superadmin", "root"].includes(u.role.trim().toLowerCase());
+    return Boolean(flag || (idGuess && roleGuess));
+  };
+  // -------------------------------------------------------------
+
   // Fetch all users
   const fetchUsers = async () => {
     try {
       if (!token) return;
-      const res = await axios.get("http://localhost:5001/api/adminManagement/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        "http://localhost:5001/api/adminManagement/users",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setUsers(res.data);
     } catch (err) {
       console.error("Fetch users error:", err.response?.data || err.message);
@@ -268,34 +292,61 @@ export default function AdminManagement() {
               </thead>
               <tbody>
                 {users.length > 0 ? (
-                  users.map((u) => (
-                    <tr key={u._id} className="hover:bg-green-50">
-                      <td className="border border-green-500 px-2 py-1">{u.userId}</td>
-                      <td className="border border-green-500 px-2 py-1">{u.name}</td>
-                      <td className="border border-green-500 px-2 py-1">{u.role}</td>
-                      <td className="border border-green-500 px-2 py-1">
-                        {u.permissions.join(", ")}
-                      </td>
-                      <td className="border border-green-500 px-2 py-1">
-                        <div className="flex justify-center items-center gap-4">
-                          <button
-                            onClick={() => editUser(u)}
-                            className="text-blue-600 hover:text-blue-800"
-                            aria-label="Edit User"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button
-                            onClick={() => deleteUser(u._id)}
-                            className="text-red-600 hover:text-red-800"
-                            aria-label="Delete User"
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  users.map((u) => {
+                    const disabled = isMainAdmin(u);
+                    if (HIDE_MAIN_ADMIN && disabled) return null;
+
+                    return (
+                      <tr key={u._id} className="hover:bg-green-50">
+                        <td className="border border-green-500 px-2 py-1">{u.userId}</td>
+                        <td className="border border-green-500 px-2 py-1">{u.name}</td>
+                        <td className="border border-green-500 px-2 py-1">{u.role}</td>
+                        <td className="border border-green-500 px-2 py-1">
+                          {Array.isArray(u.permissions) && u.permissions.length > 0
+                            ? u.permissions.join(", ")
+                            : "-"}
+                        </td>
+                        <td className="border border-green-500 px-2 py-1">
+                          <div className="flex justify-center items-center gap-4">
+                            <button
+                              onClick={() => {
+                                if (disabled) return;
+                                editUser(u);
+                              }}
+                              disabled={disabled}
+                              className={`${
+                                disabled
+                                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                                  : "text-blue-600 hover:text-blue-800"
+                              }`}
+                              aria-label="Edit User"
+                              aria-disabled={disabled}
+                              title={disabled ? "Main admin cannot be edited" : "Edit"}
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (disabled) return;
+                                deleteUser(u._id);
+                              }}
+                              disabled={disabled}
+                              className={`${
+                                disabled
+                                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                                  : "text-red-600 hover:text-red-800"
+                              }`}
+                              aria-label="Delete User"
+                              aria-disabled={disabled}
+                              title={disabled ? "Main admin cannot be deleted" : "Delete"}
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="5" className="py-4 text-gray-500 font-medium">

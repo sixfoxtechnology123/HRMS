@@ -7,8 +7,10 @@ const adminManagementSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["Admin", "HR", "Manager", "Employee"], default: "HR" },
     permissions: [{ type: String }],
+    isDefault: { type: Boolean, default: false },  // main admin flag
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "AdminManagement", default: null } // ✅ who created
   },
-  { timestamps:false }
+  { timestamps: false }
 );
 
 module.exports =
