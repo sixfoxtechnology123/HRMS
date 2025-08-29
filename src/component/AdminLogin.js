@@ -19,21 +19,21 @@ const AdminLogin = () => {
         password,
       });
 
-      if (res.data.token && res.data.admin) {
-        // Store JWT token
+      if (res.data.token) {
+        // Save JWT token
         localStorage.setItem("token", res.data.token);
 
-        // Store admin info in localStorage
+        // Save admin details (optional)
         localStorage.setItem("adminData", JSON.stringify(res.data.admin));
 
-        // Redirect after login
+        // Redirect to dashboard
         navigate("/Dashboard");
       } else {
-        setError(res.data.message || "Invalid credentials");
+        setError("Invalid credentials");
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      setError(err.response?.data?.msg || "Login failed. Please try again.");
     }
   };
 

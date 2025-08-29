@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Home } from "lucide-react"; // home icon
-import { Eye, EyeOff } from "lucide-react"; // eye icons for password
-import Sidebar from '../component/Sidebar';
-
+import { Home } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { FaTrash, FaEdit } from "react-icons/fa";
+import Sidebar from "../component/Sidebar";
 
 export default function AdminManagement() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
 
   const [newUser, setNewUser] = useState({
     userId: "",
@@ -19,7 +20,6 @@ export default function AdminManagement() {
     permissions: [],
   });
 
-  // Updated permission list
   const permissionsList = [
     "Dashboard_View",
     "Department_View",
@@ -31,27 +31,64 @@ export default function AdminManagement() {
     "Location_Manage",
     "Payroll_Manage",
     "Employee_View",
-    "Admin_Management"
+    "Admin_Management",
   ];
 
+  const token = localStorage.getItem("token");
+
+  // Fetch all users
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5001/api/users", {
+      if (!token) return;
+      const res = await axios.get("http://localhost:5001/api/adminManagement/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch users error:", err.response?.data || err.message);
     }
   };
 
-  const createUser = async () => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Create or Update User
+  const saveUser = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5001/api/users", newUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (!token) return alert("Admin not logged in!");
+      if (!newUser.userId || !newUser.name || !newUser.password) {
+        return alert("Please fill User ID, Name and Password");
+      }
+
+      let res;
+      if (editingUserId) {
+        // Update existing user
+        res = await axios.put(
+          `http://localhost:5001/api/adminManagement/users/${editingUserId}`,
+          newUser,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        alert(res.data.message || "User updated successfully!");
+        // Update state instantly
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === editingUserId ? { ...u, ...newUser } : u
+          )
+        );
+      } else {
+        // Create new user
+        res = await axios.post(
+          "http://localhost:5001/api/adminManagement/users",
+          newUser,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        alert(res.data.message || "New user added!");
+        setUsers((prev) => [...prev, res.data.user]);
+      }
+
+      // Reset form
+      setEditingUserId(null);
       setNewUser({
         userId: "",
         name: "",
@@ -59,10 +96,38 @@ export default function AdminManagement() {
         role: "HR",
         permissions: [],
       });
-      fetchUsers();
     } catch (err) {
-      console.error(err);
+      console.error("Save user error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Error saving user");
     }
+  };
+
+  // Delete user
+  const deleteUser = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await axios.delete(`http://localhost:5001/api/adminManagement/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("User deleted successfully!");
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      console.error("Delete user error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Error deleting user");
+    }
+  };
+
+  // Edit user - fetch full data including password
+  const editUser = (user) => {
+    setEditingUserId(user._id);
+    setNewUser({
+      userId: user.userId,
+      name: user.name,
+      password: "", // reset password input
+      role: user.role,
+      permissions: user.permissions || [],
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const togglePermission = (perm) => {
@@ -74,154 +139,166 @@ export default function AdminManagement() {
     }));
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <Sidebar/>
-    <div className="flex-1 overflow-y-auto">
-    <div className="min-h-screen bg-green-50 p-4">
-      {/* Top Header with Home */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-green-800">Admin Management</h2>
-         <button
-            onClick={() => navigate("/Dashboard")}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 font-semibold py-1 rounded-lg shadow hover:bg-green-700">
-            <Home size={20} /> Home
-            </button>
-      </div>
-
-      {/* Create User Form */}
-      <div className="bg-white p-4 rounded-2xl shadow mb-3 border border-green-200">
-        <h3 className="text-lg font-semibold text-green-700 mb-4">
-          Create New User
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* User ID */}
-          <div>
-            <label className="block text-sm font-medium text-green-800">
-              User ID
-            </label>
-            <input
-              placeholder="Enter User ID"
-              value={newUser.userId}
-              onChange={(e) =>
-                setNewUser({ ...newUser, userId: e.target.value })
-              }
-              className="border border-green-300 p-1 rounded w-full"
-            />
-          </div>
-
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-green-800">
-              Name
-            </label>
-            <input
-              placeholder="Enter Name"
-              value={newUser.name}
-              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-              className="border border-green-300 p-1 rounded w-full"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-green-800">
-              Password
-            </label>
-            <input
-              placeholder="Enter Password"
-              type={showPassword ? "text" : "password"}
-              value={newUser.password}
-              onChange={(e) =>
-                setNewUser({ ...newUser, password: e.target.value })
-              }
-              className="border border-green-300 p-1 rounded w-full pr-10"
-            />
+      <Sidebar />
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-screen bg-green-50 p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-green-800">Admin Management</h2>
             <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-7 text-green-600"
+              onClick={() => navigate("/Dashboard")}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 font-semibold py-1 rounded-lg shadow hover:bg-green-700"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              <Home size={20} /> Home
             </button>
           </div>
 
-          {/* Role */}
-          <div>
-            <label className="block text-sm font-medium text-green-800">
-              Role
-            </label>
-            <select
-              value={newUser.role}
-              onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-              className="border border-green-300 p-1 rounded w-full"
-            >
-              <option value="HR">HR</option>
-              <option value="Manager">Manager</option>
-              <option value="Employee">Employee</option>
-            </select>
-          </div>
-        </div>
+          {/* Form */}
+          <div className="bg-white p-4 rounded-2xl shadow mb-3 border border-green-200">
+            <h3 className="text-lg font-semibold text-green-700 mb-4">
+              {editingUserId ? "Update User" : "Create New User"}
+            </h3>
 
-      {/* Permissions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-green-800">User ID</label>
+                <input
+                  placeholder="Enter User ID"
+                  value={newUser.userId}
+                  onChange={(e) => setNewUser({ ...newUser, userId: e.target.value })}
+                  className="border border-green-300 p-1 rounded w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-green-800">Name</label>
+                <input
+                  placeholder="Enter Name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  className="border border-green-300 p-1 rounded w-full"
+                />
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-green-800">Password</label>
+                <input
+                  placeholder="Enter Password"
+                  type={showPassword ? "text" : "password"}
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  className="border border-green-300 p-1 rounded w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-7 text-green-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-green-800">Role</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  className="border border-green-300 p-1 rounded w-full"
+                >
+                  <option value="HR">HR</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Employee">Employee</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Permissions */}
             <div className="mt-4">
-            <h4 className="font-medium text-green-700 mb-2">Permissions:</h4>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2 font-semibold">
+              <h4 className="font-medium text-green-700 mb-2">Permissions:</h4>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-2 font-semibold">
                 {permissionsList.map((perm) => (
-                <label key={perm} className="flex items-center">
+                  <label key={perm} className="flex items-center">
                     <input
-                    type="checkbox"
-                    checked={newUser.permissions.includes(perm)}
-                    onChange={() => togglePermission(perm)}
-                    className="mr-2 "
+                      type="checkbox"
+                      checked={newUser.permissions.includes(perm)}
+                      onChange={() => togglePermission(perm)}
+                      className="mr-2"
                     />
                     {perm.replace("_", " ")}
-                </label>
+                  </label>
                 ))}
+              </div>
             </div>
-            </div>
 
+            <button
+              onClick={saveUser}
+              className={`mt-3 px-4 font-semibold py-1 rounded-lg ${
+                editingUserId
+                  ? "bg-yellow-400 hover:bg-yellow-500 text-black"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              }`}
+            >
+              {editingUserId ? "Update User" : "Create User"}
+            </button>
+          </div>
 
-        <button
-          onClick={createUser}
-          className="mt-3 bg-green-600 text-white px-4 font-semibold py-1 rounded-lg hover:bg-green-700"
-        >
-          Create User
-        </button>
+          {/* Users Table */}
+          <div className="bg-white p-4 rounded-2xl shadow border border-green-200">
+            <h3 className="text-lg font-semibold text-green-700 mb-2">Existing Users</h3>
+            <table className="w-full table-auto border border-green-500 text-sm text-center">
+              <thead className="bg-green-100 text-green-800">
+                <tr>
+                  <th className="border border-green-500 px-2 py-1">User ID</th>
+                  <th className="border border-green-500 px-2 py-1">Name</th>
+                  <th className="border border-green-500 px-2 py-1">Role</th>
+                  <th className="border border-green-500 px-2 py-1">Permissions</th>
+                  <th className="border border-green-500 px-2 py-1">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.length > 0 ? (
+                  users.map((u) => (
+                    <tr key={u._id} className="hover:bg-green-50">
+                      <td className="border border-green-500 px-2 py-1">{u.userId}</td>
+                      <td className="border border-green-500 px-2 py-1">{u.name}</td>
+                      <td className="border border-green-500 px-2 py-1">{u.role}</td>
+                      <td className="border border-green-500 px-2 py-1">
+                        {u.permissions.join(", ")}
+                      </td>
+                      <td className="border border-green-500 px-2 py-1">
+                        <div className="flex justify-center items-center gap-4">
+                          <button
+                            onClick={() => editUser(u)}
+                            className="text-blue-600 hover:text-blue-800"
+                            aria-label="Edit User"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => deleteUser(u._id)}
+                            className="text-red-600 hover:text-red-800"
+                            aria-label="Delete User"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="py-4 text-gray-500 font-medium">
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-
-      {/* Existing Users */}
-      <div className="bg-white p-4 rounded-2xl shadow border border-green-200">
-        <h3 className="text-lg font-semibold text-green-700 mb-2">
-          Existing Users
-        </h3>
-        <table className="w-full border border-green-300">
-          <thead>
-            <tr className="bg-green-100 text-green-800">
-              <th className="border p-1">User ID</th>
-              <th className="border p-1">Name</th>
-              <th className="border p-1">Role</th>
-              <th className="border p-1">Permissions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u._id} className="hover:bg-green-50">
-                <td className="border p-1">{u.userId}</td>
-                <td className="border p-1">{u.name}</td>
-                <td className="border p-1">{u.role}</td>
-                <td className="border p-1">{u.permissions.join(", ")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    </div>
     </div>
   );
 }

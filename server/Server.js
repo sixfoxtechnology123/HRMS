@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -5,6 +6,9 @@ const path = require("path");
 const connectDB = require("./db/db");
 const Admin = require("./models/Admin");
 const bcrypt = require("bcryptjs");
+
+//  Load .env at the very top so JWT_SECRET, MONGO_URI, PORT are available
+dotenv.config();
 
 // Routes
 const departmentRoutes = require("./routes/departmentRoutes");
@@ -20,10 +24,7 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const activityRoutes = require("./routes/activityRoutes");
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-
-dotenv.config();
+const adminManagementRoutes = require("./routes/adminManagementRoutes");
 
 const app = express();
 
@@ -48,19 +49,18 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
-app.use("/api/auth", authRoutes);   // login route for all users
-app.use("/api/users", userRoutes);  // admin creates/manages users
+app.use("/api/adminManagement", adminManagementRoutes);
 
-
-// Function to create default admin if not exists
+// Create default admin if not exists
 const createDefaultAdmin = async () => {
   try {
     const adminExists = await Admin.findOne({ userId: "admin" });
     if (!adminExists) {
-      const hashedPassword = await bcrypt.hash("admin123", 10); // hash the password
+      const hashedPassword = await bcrypt.hash("admin123", 10);
       await Admin.create({
         userId: "admin",
         password: hashedPassword,
+        role: "Admin", // ✅ ensure role exists so JWT can use it
       });
       console.log("Default admin created: userId=admin, password=admin123");
     } else {
@@ -71,11 +71,11 @@ const createDefaultAdmin = async () => {
   }
 };
 
-// Start server
+//  Start server
 const startServer = async () => {
   try {
     await connectDB();
-    await createDefaultAdmin(); // create default admin
+    await createDefaultAdmin();
 
     const PORT = process.env.PORT || 5001;
     const server = app.listen(PORT, () => {
