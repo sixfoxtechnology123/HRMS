@@ -57,30 +57,39 @@ export default function AdminManagement() {
   const saveUser = async () => {
     try {
       if (!token) return alert("Admin not logged in!");
-      if (!newUser.userId || !newUser.name || !newUser.password) {
-        return alert("Please fill User ID, Name and Password");
+
+      const isEditing = !!editingUserId;
+
+      // Conditional validation
+      if (!newUser.userId || !newUser.name || (!isEditing && !newUser.password)) {
+        return alert(
+          !isEditing
+            ? "Please fill User ID, Name and Password"
+            : "Please fill User ID and Name"
+        );
       }
 
+      // Prepare payload
+      const payload = { ...newUser };
+      if (isEditing && !newUser.password) delete payload.password;
+
       let res;
-      if (editingUserId) {
+      if (isEditing) {
         // Update existing user
         res = await axios.put(
           `http://localhost:5001/api/adminManagement/users/${editingUserId}`,
-          newUser,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         alert(res.data.message || "User updated successfully!");
-        // Update state instantly
         setUsers((prev) =>
-          prev.map((u) =>
-            u._id === editingUserId ? { ...u, ...newUser } : u
-          )
+          prev.map((u) => (u._id === editingUserId ? { ...u, ...payload } : u))
         );
       } else {
         // Create new user
         res = await axios.post(
           "http://localhost:5001/api/adminManagement/users",
-          newUser,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         alert(res.data.message || "New user added!");
@@ -117,13 +126,13 @@ export default function AdminManagement() {
     }
   };
 
-  // Edit user - fetch full data including password
+  // Edit user - fetch full data
   const editUser = (user) => {
     setEditingUserId(user._id);
     setNewUser({
       userId: user.userId,
       name: user.name,
-      password: "", // reset password input
+      password: "", // password optional
       role: user.role,
       permissions: user.permissions || [],
     });
