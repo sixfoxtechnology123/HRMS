@@ -1,9 +1,11 @@
+// backend/routes/adminRoutes.js
 const express = require("express");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
@@ -16,7 +18,7 @@ const maskAdmin = (adminDoc) => {
   return obj;
 };
 
-// Auth middleware for token
+// Auth middleware
 const auth = (req, res, next) => {
   try {
     const hdr = req.header("Authorization") || "";
@@ -24,37 +26,38 @@ const auth = (req, res, next) => {
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.id;
-    req.userRole = decoded.role; // ✅ add role
+    req.userRole = decoded.role;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
-/* ------------------------ Uploads ------------------------ */
+/* ------------------------ Multer Disk Storage ------------------------ */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + "_" + file.originalname.replace(/\s+/g, "_")),
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, "../uploads");
+    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "_" + file.originalname.replace(/\s+/g, "_");
+    cb(null, uniqueName);
+  },
 });
 const upload = multer({ storage });
 
 /* ------------------------ LOGIN ------------------------ */
 router.post("/login", async (req, res) => {
-  const { userId, password } = req.body;
   try {
+    const { userId, password } = req.body;
     const admin = await Admin.findOne({ userId });
     if (!admin) return res.status(400).json({ message: "Invalid User ID" });
 
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid Password" });
 
-    const token = jwt.sign(
-      { id: admin._id, role: admin.role }, // ✅ include role in token
-      JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
+    const token = jwt.sign({ id: admin._id, role: admin.role }, JWT_SECRET, { expiresIn: "1d" });
     res.json({ success: true, token, admin: maskAdmin(admin) });
   } catch (err) {
     console.error(err);
@@ -75,7 +78,7 @@ router.get("/profile", auth, async (req, res) => {
 });
 
 /* -------------------- EDIT PROFILE -------------------- */
-router.put("/edit-profile/:id", upload.single("profileImage"), async (req, res) => {
+router.put("/edit-profile/:id", auth, upload.single("profileImage"), async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
     if (!admin) return res.status(404).json({ message: "Admin not found" });
@@ -83,10 +86,13 @@ router.put("/edit-profile/:id", upload.single("profileImage"), async (req, res) 
     if (req.body.name) admin.name = req.body.name;
 
     if (req.file) {
-      if (admin.profileImage && fs.existsSync(admin.profileImage)) {
-        try { fs.unlinkSync(admin.profileImage); } catch (e) {}
+      // Delete old image from uploads folder
+      if (admin.profileImage && fs.existsSync(path.join(__dirname, "..", admin.profileImage))) {
+        fs.unlinkSync(path.join(__dirname, "..", admin.profileImage));
       }
-      admin.profileImage = req.file.path.replace(/\\/g, "/");
+
+      // Save new image path
+      admin.profileImage = `uploads/${req.file.filename}`;
     }
 
     await admin.save();

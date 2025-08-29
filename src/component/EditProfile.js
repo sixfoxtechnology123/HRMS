@@ -11,44 +11,18 @@ const EditProfile = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-useEffect(() => {
-  const adminData = localStorage.getItem("adminData");
-  if (adminData) {
-    const admin = JSON.parse(adminData);
-
-    // 1️ Load from localStorage first
-    setName(admin.name);
-    setPreview(
-      admin.profileImage
-        ? `http://localhost:5001/${admin.profileImage}`
-        : defaultAvatar
-    );
-
-    // 2️Then fetch from backend (optional sync)
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const res = await axios.get(
-          `http://localhost:5001/api/admin/profile/${admin._id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        setName(res.data.name);
-        setPreview(
-          res.data.profileImage
-            ? `http://localhost:5001/${res.data.profileImage}`
-            : defaultAvatar
-        );
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchProfile();
-  }
-}, []);
-
+  useEffect(() => {
+    const adminData = localStorage.getItem("adminData");
+    if (adminData) {
+      const admin = JSON.parse(adminData);
+      setName(admin.name);
+      setPreview(
+        admin.profileImage
+          ? `http://localhost:5001/${admin.profileImage}`
+          : defaultAvatar
+      );
+    }
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -83,6 +57,7 @@ useEffect(() => {
         }
       );
 
+      // Update localStorage and preview
       localStorage.setItem("adminData", JSON.stringify(res.data.admin));
       setPreview(
         res.data.admin.profileImage
@@ -90,9 +65,8 @@ useEffect(() => {
           : defaultAvatar
       );
       setMessage("Profile updated successfully");
-      setTimeout(() => {
-      navigate("/Dashboard");
-    }, 1000);
+
+      setTimeout(() => navigate("/Dashboard"), 1000);
     } catch (err) {
       console.error(err);
       setMessage(err.response?.data?.message || "Failed to update profile");
