@@ -1,14 +1,21 @@
-// backend/server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./db/db");
 const bcrypt = require("bcryptjs");
-const AdminManagement = require("./models/adminManagementModel"); // ✅ use AdminManagement
+const AdminManagement = require("./models/adminManagementModel");
 
-//  Load .env
 dotenv.config();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Serve static files from "uploads" folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 const departmentRoutes = require("./routes/departmentRoutes");
@@ -18,7 +25,7 @@ const leaveTypeRoutes = require("./routes/leavetyperoutes");
 const holidayRoutes = require("./routes/holidayRoutes");
 const shiftRoutes = require("./routes/shiftroutes");
 const policyRoutes = require("./routes/policyRoutes");
-const locationRoutes = require('./routes/locationroutes');
+const locationRoutes = require("./routes/locationroutes");
 const payrollComponentRoutes = require("./routes/payrollComponentRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
@@ -26,14 +33,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const adminManagementRoutes = require("./routes/adminManagementRoutes");
 
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Routes
+// Use routes
 app.use("/api/master", masterRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/designations", designationRoutes);
@@ -49,7 +49,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
 app.use("/api/adminManagement", adminManagementRoutes);
 
-// ✅ Create default admin in AdminManagement collection
+// Create default admin
 const createDefaultAdmin = async () => {
   try {
     const adminExists = await AdminManagement.findOne({ userId: "admin" });
@@ -60,8 +60,8 @@ const createDefaultAdmin = async () => {
         name: "Main Admin",
         password: hashedPassword,
         role: "Admin",
-        permissions: ["all"], // optional
-         isDefault: true
+        permissions: ["all"],
+        isDefault: true,
       });
       console.log("Default admin created: userId=admin, password=admin123");
     } else {

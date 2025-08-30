@@ -1,6 +1,5 @@
-// backend/routes/adminRoutes.js
 const express = require("express");
-const Admin = require("../models/Admin");
+const Admin = require("../models/adminManagementModel"); 
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const fs = require("fs");
@@ -10,7 +9,7 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
 
-// Helper to remove password from responses
+// Mask password
 const maskAdmin = (adminDoc) => {
   if (!adminDoc) return null;
   const obj = adminDoc.toObject ? adminDoc.toObject() : adminDoc;
@@ -33,11 +32,11 @@ const auth = (req, res, next) => {
   }
 };
 
-/* ------------------------ Multer Disk Storage ------------------------ */
+// Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -47,7 +46,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/* ------------------------ LOGIN ------------------------ */
+// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { userId, password } = req.body;
@@ -65,7 +64,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/* ------------------------ PROFILE ------------------------ */
+// PROFILE
 router.get("/profile", auth, async (req, res) => {
   try {
     const admin = await Admin.findById(req.userId).select("-password");
@@ -77,21 +76,20 @@ router.get("/profile", auth, async (req, res) => {
   }
 });
 
-/* -------------------- EDIT PROFILE -------------------- */
-router.put("/edit-profile/:id", auth, upload.single("profileImage"), async (req, res) => {
+// EDIT PROFILE
+router.put("/edit-profile", auth, upload.single("profileImage"), async (req, res) => {
   try {
-    const admin = await Admin.findById(req.params.id);
+    const admin = await Admin.findById(req.userId);
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
     if (req.body.name) admin.name = req.body.name;
 
     if (req.file) {
-      // Delete old image from uploads folder
-      if (admin.profileImage && fs.existsSync(path.join(__dirname, "..", admin.profileImage))) {
-        fs.unlinkSync(path.join(__dirname, "..", admin.profileImage));
+      // Delete old photo if exists
+      if (admin.profileImage) {
+        const oldPath = path.join(__dirname, "..", admin.profileImage);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-
-      // Save new image path
       admin.profileImage = `uploads/${req.file.filename}`;
     }
 
@@ -103,11 +101,12 @@ router.put("/edit-profile/:id", auth, upload.single("profileImage"), async (req,
   }
 });
 
-/* -------------------- CHANGE PASSWORD -------------------- */
+// CHANGE PASSWORD
 router.put("/change-password", auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) return res.status(400).json({ message: "Both current and new passwords required" });
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ message: "Both current and new passwords required" });
 
     const admin = await Admin.findById(req.userId);
     if (!admin) return res.status(404).json({ message: "Admin not found" });

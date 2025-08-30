@@ -61,15 +61,20 @@ const Dashboard = () => {
       });
   }, []);
 
-  // Sync admin data from localStorage
+  // Sync admin data from localStorage & listen for profile update
   useEffect(() => {
     const updateAdminData = () => {
       const data = localStorage.getItem("adminData");
       if (data) setAdmin(JSON.parse(data));
     };
     updateAdminData();
+    window.addEventListener("profileUpdated", updateAdminData);
     window.addEventListener("storage", updateAdminData);
-    return () => window.removeEventListener("storage", updateAdminData);
+
+    return () => {
+      window.removeEventListener("profileUpdated", updateAdminData);
+      window.removeEventListener("storage", updateAdminData);
+    };
   }, []);
 
   // Close dropdown if clicked outside
@@ -111,12 +116,15 @@ const Dashboard = () => {
 
           <div className="relative flex items-center gap-3" ref={dropdownRef}>
             <span className="font-medium text-gray-700">{admin?.name ?? "Admin"}</span>
+       
             <img
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              src={admin?.profileImage ? `http://localhost:5001/${admin.profileImage}` : defaultAvatar}
+              src={admin?.profileImage ? `http://localhost:5001/${admin.profileImage}?t=${Date.now()}` : defaultAvatar}
               alt="profile"
               className="w-10 h-10 rounded-full object-cover cursor-pointer"
             />
+
+
             {dropdownOpen && (
               <div className="absolute right-0 mt-12 w-48 bg-white border rounded shadow-lg z-50">
                 <ul className="flex flex-col">
