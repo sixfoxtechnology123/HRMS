@@ -57,7 +57,14 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid Password" });
 
     const token = jwt.sign({ id: admin._id, role: admin.role }, JWT_SECRET, { expiresIn: "1d" });
-    res.json({ success: true, token, admin: maskAdmin(admin) });
+
+    // Send admin info including permissions
+    res.json({
+      success: true,
+      token,
+      admin: maskAdmin(admin),
+      permissions: admin.permissions, // ✅ Add this
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });

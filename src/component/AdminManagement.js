@@ -1,3 +1,4 @@
+// src/pages/AdminManagement.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -36,17 +37,14 @@ export default function AdminManagement() {
 
   const token = localStorage.getItem("token");
 
-  // ---- NEW: robust main-admin detector + toggle to hide row ----
-  const HIDE_MAIN_ADMIN = false; // set true to hide the row instead of disabling buttons
+  // Detect main admin to protect editing/deleting
   const isMainAdmin = (u) => {
-    // prefers backend flag; also handles string "true"
     const flag =
       u?.isDefault === true ||
       u?.isDefault === "true" ||
       u?.isDefault === 1 ||
       u?.is_default === true ||
       u?.is_default === "true";
-    // fallbacks in case API didn't include isDefault but your main admin is obvious
     const idGuess =
       typeof u?.userId === "string" &&
       ["admin", "superadmin", "mainadmin", "root"].includes(
@@ -57,12 +55,11 @@ export default function AdminManagement() {
       ["admin", "superadmin", "root"].includes(u.role.trim().toLowerCase());
     return Boolean(flag || (idGuess && roleGuess));
   };
-  // -------------------------------------------------------------
 
   // Fetch all users
   const fetchUsers = async () => {
+    if (!token) return;
     try {
-      if (!token) return;
       const res = await axios.get(
         "http://localhost:5001/api/adminManagement/users",
         { headers: { Authorization: `Bearer ${token}` } }
@@ -79,27 +76,23 @@ export default function AdminManagement() {
 
   // Create or Update User
   const saveUser = async () => {
+    if (!token) return alert("Admin not logged in!");
+    const isEditing = !!editingUserId;
+
+    if (!newUser.userId || !newUser.name || (!isEditing && !newUser.password)) {
+      return alert(
+        !isEditing
+          ? "Please fill User ID, Name and Password"
+          : "Please fill User ID and Name"
+      );
+    }
+
+    const payload = { ...newUser };
+    if (isEditing && !newUser.password) delete payload.password;
+
     try {
-      if (!token) return alert("Admin not logged in!");
-
-      const isEditing = !!editingUserId;
-
-      // Conditional validation
-      if (!newUser.userId || !newUser.name || (!isEditing && !newUser.password)) {
-        return alert(
-          !isEditing
-            ? "Please fill User ID, Name and Password"
-            : "Please fill User ID and Name"
-        );
-      }
-
-      // Prepare payload
-      const payload = { ...newUser };
-      if (isEditing && !newUser.password) delete payload.password;
-
       let res;
       if (isEditing) {
-        // Update existing user
         res = await axios.put(
           `http://localhost:5001/api/adminManagement/users/${editingUserId}`,
           payload,
@@ -110,7 +103,6 @@ export default function AdminManagement() {
           prev.map((u) => (u._id === editingUserId ? { ...u, ...payload } : u))
         );
       } else {
-        // Create new user
         res = await axios.post(
           "http://localhost:5001/api/adminManagement/users",
           payload,
@@ -120,7 +112,6 @@ export default function AdminManagement() {
         setUsers((prev) => [...prev, res.data.user]);
       }
 
-      // Reset form
       setEditingUserId(null);
       setNewUser({
         userId: "",
@@ -139,9 +130,10 @@ export default function AdminManagement() {
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`http://localhost:5001/api/adminManagement/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `http://localhost:5001/api/adminManagement/users/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       alert("User deleted successfully!");
       setUsers((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
@@ -150,13 +142,13 @@ export default function AdminManagement() {
     }
   };
 
-  // Edit user - fetch full data
+  // Edit user
   const editUser = (user) => {
     setEditingUserId(user._id);
     setNewUser({
       userId: user.userId,
       name: user.name,
-      password: "", // password optional on edit
+      password: "",
       role: user.role,
       permissions: user.permissions || [],
     });
@@ -188,7 +180,7 @@ export default function AdminManagement() {
             </button>
           </div>
 
-          {/* Form */}
+          {/* User Form */}
           <div className="bg-white p-4 rounded-2xl shadow mb-3 border border-green-200">
             <h3 className="text-lg font-semibold text-green-700 mb-4">
               {editingUserId ? "Update User" : "Create New User"}
@@ -200,7 +192,9 @@ export default function AdminManagement() {
                 <input
                   placeholder="Enter User ID"
                   value={newUser.userId}
-                  onChange={(e) => setNewUser({ ...newUser, userId: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, userId: e.target.value })
+                  }
                   className="border border-green-300 p-1 rounded w-full"
                 />
               </div>
@@ -210,7 +204,9 @@ export default function AdminManagement() {
                 <input
                   placeholder="Enter Name"
                   value={newUser.name}
-                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, name: e.target.value })
+                  }
                   className="border border-green-300 p-1 rounded w-full"
                 />
               </div>
@@ -221,7 +217,9 @@ export default function AdminManagement() {
                   placeholder="Enter Password"
                   type={showPassword ? "text" : "password"}
                   value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
                   className="border border-green-300 p-1 rounded w-full pr-10"
                 />
                 <button
@@ -237,7 +235,9 @@ export default function AdminManagement() {
                 <label className="block text-sm font-medium text-green-800">Role</label>
                 <select
                   value={newUser.role}
-                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value })
+                  }
                   className="border border-green-300 p-1 rounded w-full"
                 >
                   <option value="HR">HR</option>
@@ -294,8 +294,6 @@ export default function AdminManagement() {
                 {users.length > 0 ? (
                   users.map((u) => {
                     const disabled = isMainAdmin(u);
-                    if (HIDE_MAIN_ADMIN && disabled) return null;
-
                     return (
                       <tr key={u._id} className="hover:bg-green-50">
                         <td className="border border-green-500 px-2 py-1">{u.userId}</td>
@@ -309,36 +307,20 @@ export default function AdminManagement() {
                         <td className="border border-green-500 px-2 py-1">
                           <div className="flex justify-center items-center gap-4">
                             <button
-                              onClick={() => {
-                                if (disabled) return;
-                                editUser(u);
-                              }}
+                              onClick={() => { if (!disabled) editUser(u); }}
                               disabled={disabled}
                               className={`${
-                                disabled
-                                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
-                                  : "text-blue-600 hover:text-blue-800"
+                                disabled ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:text-blue-800"
                               }`}
-                              aria-label="Edit User"
-                              aria-disabled={disabled}
-                              title={disabled ? "Main admin cannot be edited" : "Edit"}
                             >
                               <FaEdit />
                             </button>
                             <button
-                              onClick={() => {
-                                if (disabled) return;
-                                deleteUser(u._id);
-                              }}
+                              onClick={() => { if (!disabled) deleteUser(u._id); }}
                               disabled={disabled}
                               className={`${
-                                disabled
-                                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
-                                  : "text-red-600 hover:text-red-800"
+                                disabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-800"
                               }`}
-                              aria-label="Delete User"
-                              aria-disabled={disabled}
-                              title={disabled ? "Main admin cannot be deleted" : "Delete"}
                             >
                               <FaTrash />
                             </button>

@@ -1,4 +1,3 @@
-// src/pages/AdminLogin.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,18 +13,37 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:5001/api/adminManagement/login", {
-        userId: userId.trim(),
-        password: password.trim(),
-      });
+      const res = await axios.post(
+        "http://localhost:5001/api/adminManagement/login",
+        {
+          userId: userId.trim(),
+          password: password.trim(),
+        }
+      );
 
       if (res.data.token) {
+        const user = res.data.admin || res.data.user;
+        if (!user) {
+          setError("Login failed. Invalid response from server.");
+          return;
+        }
+
+        const adminData = {
+          ...user,
+          permissions: user.permissions || [],
+          role: user.role || "user", // mainAdmin or user
+        };
+
+        // Store in localStorage
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("adminData", JSON.stringify(res.data.user));
-        localStorage.setItem(
-          "userPermissions",
-          JSON.stringify(res.data.user.permissions || [])
-        );
+        localStorage.setItem("adminData", JSON.stringify(adminData));
+        localStorage.setItem("userPermissions", JSON.stringify(adminData.permissions));
+
+        // DEBUG LOGS
+        console.log("Logged in Admin Data:", adminData);
+        console.log("Permissions:", adminData.permissions);
+
+        // Navigate to Dashboard
         navigate("/Dashboard");
       } else {
         setError("Invalid credentials");
