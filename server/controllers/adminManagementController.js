@@ -1,7 +1,33 @@
 // backend/controllers/adminManagementController.js
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const AdminManagement = require('../models/adminManagementModel');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const AdminManagement = require("../models/adminManagementModel");
+
+// ======================= CREATE DEFAULT MAIN ADMIN =======================
+const createDefaultAdmin = async () => {
+  try {
+    const existingAdmin = await AdminManagement.findOne({ userId: "admin" });
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash("admin123", 10);
+      await AdminManagement.create({
+        userId: "admin",
+        name: "Main Admin", // <-- Always Main Admin
+        password: hashedPassword,
+        role: "Admin",
+        permissions: ["ALL"], // Main admin can see all permissions
+        isDefault: true,
+      });
+      console.log("Default Main Admin created: admin / admin123");
+    } else {
+      console.log("ℹDefault Main Admin already exists");
+    }
+  } catch (err) {
+    console.error("Error creating default admin:", err.message);
+  }
+};
+
+// Call it once when file loads
+createDefaultAdmin();
 
 // ======================= LOGIN =======================
 const login = async (req, res) => {
@@ -11,18 +37,21 @@ const login = async (req, res) => {
     password = password?.trim();
 
     if (!userId || !password)
-      return res.status(400).json({ message: "User ID and password are required" });
+      return res
+        .status(400)
+        .json({ message: "User ID and password are required" });
 
     const user = await AdminManagement.findOne({ userId });
     if (!user) return res.status(404).json({ message: "Invalid User ID" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid password" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid password" });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
     return res.json({
@@ -32,23 +61,28 @@ const login = async (req, res) => {
         userId: user.userId,
         name: user.name,
         role: user.role,
-        permissions: user.permissions || []
-      }
+        permissions: user.permissions || [],
+        isDefault: user.isDefault || false, // <-- Add flag for frontend
+      },
     });
   } catch (err) {
-    console.error('Login error:', err);
-    return res.status(500).json({ message: "Login failed", error: err.message });
+    console.error("Login error:", err);
+    return res
+      .status(500)
+      .json({ message: "Login failed", error: err.message });
   }
 };
 
 // ======================= GET ALL USERS =======================
-// Exclude main admin from table
+// Include Main Admin in list, but mark with isDefault flag
 const getUsers = async (req, res) => {
   try {
-    const users = await AdminManagement.find({ isDefault: { $ne: true } }).select('-password');
+    const users = await AdminManagement.find().select("-password");
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching users', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: err.message });
   }
 };
 
@@ -61,10 +95,11 @@ const createUser = async (req, res) => {
     password = password?.trim();
 
     if (!userId || !name || !password)
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: "Missing required fields" });
 
     const existing = await AdminManagement.findOne({ userId });
-    if (existing) return res.status(400).json({ message: 'User ID already exists' });
+    if (existing)
+      return res.status(400).json({ message: "User ID already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -72,24 +107,28 @@ const createUser = async (req, res) => {
       userId,
       name,
       password: hashed,
-      role: role || 'HR',
+      role: role || "HR",
       permissions: permissions || [],
-      createdBy: req.user?.id || null // optional: track who created
+      createdBy: req.user?.id || null, // optional: track creator
+      isDefault: false, // not main admin
     });
     await newUser.save();
 
     res.status(201).json({
-      message: 'New User Added',
+      message: "New User Added",
       user: {
         _id: newUser._id,
         userId: newUser.userId,
         name: newUser.name,
         role: newUser.role,
-        permissions: newUser.permissions
-      }
+        permissions: newUser.permissions,
+        isDefault: false,
+      },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Error creating user', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error creating user", error: err.message });
   }
 };
 
@@ -98,8 +137,13 @@ const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId, name, password, role, permissions } = req.body;
+
     const user = await AdminManagement.findById(id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Prevent updating Main Admin
+    if (user.isDefault)
+      return res.status(403).json({ message: "Main Admin cannot be updated" });
 
     user.userId = userId?.trim() || user.userId;
     user.name = name?.trim() || user.name;
@@ -111,17 +155,19 @@ const updateUser = async (req, res) => {
     await user.save();
 
     res.json({
-      message: 'User updated',
+      message: "User updated",
       user: {
         _id: user._id,
         userId: user.userId,
         name: user.name,
         role: user.role,
-        permissions: user.permissions
-      }
+        permissions: user.permissions,
+      },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating user', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error updating user", error: err.message });
   }
 };
 
@@ -129,12 +175,21 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await AdminManagement.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ message: 'User not found' });
 
-    res.json({ message: 'User deleted', deleted });
+    const user = await AdminManagement.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Prevent deleting Main Admin
+    if (user.isDefault)
+      return res.status(403).json({ message: "Main Admin cannot be deleted" });
+
+    const deleted = await AdminManagement.findByIdAndDelete(id);
+
+    res.json({ message: "User deleted", deleted });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting user', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: err.message });
   }
 };
 

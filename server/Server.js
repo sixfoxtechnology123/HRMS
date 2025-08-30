@@ -1,23 +1,24 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./db/db");
 const bcrypt = require("bcryptjs");
-const AdminManagement = require("./models/adminManagementModel");
+const Admin = require("./models/Admin");
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
+// ----------------- Middleware -----------------
 app.use(cors());
 app.use(express.json());
 
 // Serve static files from "uploads" folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+// ----------------- Routes -----------------
 const departmentRoutes = require("./routes/departmentRoutes");
 const designationRoutes = require("./routes/designationRoutes");
 const masterRoutes = require("./routes/masterRoutes");
@@ -33,7 +34,6 @@ const adminRoutes = require("./routes/adminRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const adminManagementRoutes = require("./routes/adminManagementRoutes");
 
-// Use routes
 app.use("/api/master", masterRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/designations", designationRoutes);
@@ -49,37 +49,39 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
 app.use("/api/adminManagement", adminManagementRoutes);
 
-// Create default admin
+// ----------------- Create Default Admin -----------------
 const createDefaultAdmin = async () => {
   try {
-    const adminExists = await AdminManagement.findOne({ userId: "admin" });
+    const adminExists = await Admin.findOne({ userId: "admin" });
+
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
-      await AdminManagement.create({
+      await Admin.create({
         userId: "admin",
         name: "Main Admin",
         password: hashedPassword,
         role: "Admin",
-        permissions: ["all"],
-        isDefault: true,
+        profileImage: "",
       });
-      console.log("Default admin created: userId=admin, password=admin123");
+      console.log("Default admin created → userId: admin | password: admin123");
     } else {
-      console.log("Admin already exists");
+      console.log("Default admin already exists in database");
     }
   } catch (err) {
-    console.error("Error creating default admin:", err);
+    console.error(" Error creating default admin:", err);
   }
 };
 
-// Start server
+// ----------------- Start Server -----------------
 const startServer = async () => {
   try {
     await connectDB();
     await createDefaultAdmin();
 
     const PORT = process.env.PORT || 5001;
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`Server running at http://localhost:${PORT}`)
+    );
   } catch (err) {
     console.error("Server failed to start:", err);
   }
