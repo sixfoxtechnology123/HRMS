@@ -110,7 +110,7 @@ const Dashboard = () => {
   // ["Dashboard_View","Department_View","Designation_View","Leave_Manage","Holiday_Manage",
   //  "Shift_Manage","Policy_Manage","Location_Manage","Payroll_Manage","Employee_View","Admin_Management"]
   const cards = [
-    { title: "Employeessssssssss", value: counts.employees, path: "/EmployeeList", color: "bg-blue-500 text-white", icon: Users, permission: "Employee_View" },
+    { title: "Employees", value: counts.employees, path: "/EmployeeList", color: "bg-blue-500 text-white", icon: Users, permission: "Employee_View" },
     { title: "Departments", value: counts.departments, path: "/DepartmentList", color: "bg-green-500 text-white", icon: Building2, permission: "Department_View" },
     { title: "Designations", value: counts.designations, path: "/DesignationList", color: "bg-purple-500 text-white", icon: Briefcase, permission: "Designation_View" },
     { title: "Leave Types", value: counts.leaveTypes, path: "/LeaveTypeList", color: "bg-pink-500 text-white", icon: Calendar, permission: "Leave_Manage" },
