@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import BackButton from "../component/BackButton";
 import Sidebar from '../component/Sidebar';
+import toast from "react-hot-toast";
 
 
 const LeaveTypeList = () => {
@@ -29,6 +30,7 @@ const LeaveTypeList = () => {
     try {
       await axios.delete(`http://localhost:5001/api/leavetypes/${id}`);
       setLeaveTypes(leaveTypes.filter((lt) => lt._id !== id));
+      toast.success("Leave type deleted successfully")
     } catch (err) {
       console.error(err);
     }
@@ -47,7 +49,7 @@ const LeaveTypeList = () => {
             onClick={() => navigate("/leavetypeMaster")}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-semibold whitespace-nowrap"
           >
-            Add Leave Type
+            Manage New Leave Type
           </button>
         </div>
       </div>
@@ -55,25 +57,27 @@ const LeaveTypeList = () => {
       <table className="w-full table-auto border border-green-500">
         <thead className="bg-gray-200 text-sm">
           <tr>
+            <th className="border border-green-500 px-2 py-1">S.No</th>
             <th className="border border-green-500 px-2 py-1">Leave Type ID</th>
             <th className="border border-green-500 px-2 py-1">Leave Name</th>
-            <th className="border border-green-500 px-2 py-1">Leave Code</th>
-            <th className="border border-green-500 px-2 py-1">Annual Quota</th>
-            <th className="border border-green-500 px-2 py-1">Carry Forward</th>
-            <th className="border border-green-500 px-2 py-1">Status</th>
+            <th className="border border-green-500 px-2 py-1">alies</th>
+            {/* <th className="border border-green-500 px-2 py-1">Annual Quota</th>
+            <th className="border border-green-500 px-2 py-1">Carry Forward</th> */}
+            <th className="border border-green-500 px-2 py-1">Remarks</th>
             <th className="border border-green-500 px-2 py-1">Action</th>
           </tr>
         </thead>
         <tbody className="text-sm text-center">
           {leaveTypes.length > 0 ? (
-            leaveTypes.map((lt) => (
+            leaveTypes.map((lt,index) => (
               <tr key={lt._id} className="hover:bg-gray-100 transition">
+                <td className="border border-green-500 px-2 py-1">{index + 1}</td> 
                 <td className="border border-green-500 px-2 py-1">{lt.leaveTypeID}</td>
                 <td className="border border-green-500 px-2 py-1">{lt.leaveName}</td>
                 <td className="border border-green-500 px-2 py-1">{lt.leaveCode}</td>
-                <td className="border border-green-500 px-2 py-1">{lt.annualQuota}</td>
-                <td className="border border-green-500 px-2 py-1">{lt.carryForward}</td>
-                <td className="border border-green-500 px-2 py-1">{lt.status}</td>
+                {/* <td className="border border-green-500 px-2 py-1">{lt.annualQuota}</td>
+                <td className="border border-green-500 px-2 py-1">{lt.carryForward}</td> */}
+                <td className="border border-green-500 px-2 py-1">{lt.remarks}</td>
                 <td className="border border-green-500 px-2 py-1">
                   <div className="flex justify-center gap-8">
                     <button

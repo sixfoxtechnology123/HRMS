@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -23,7 +23,9 @@ const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [role, setRole] = useState("");
+  const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const admin = JSON.parse(localStorage.getItem("adminData")) || {};
@@ -36,7 +38,19 @@ const Sidebar = () => {
     { name: "New Employee Reg", path: "/EmployeeList", icon: Users, permission: "Employee_View" },
     { name: "Departments", path: "/DepartmentList", icon: Building2, permission: "Department_View" },
     { name: "Designations", path: "/DesignationList", icon: Briefcase, permission: "Designation_View" },
-    { name: "Leave Types", path: "/LeaveTypeList", icon: Calendar, permission: "Leave_Manage" },
+    {
+      name: "Leave Management",
+      icon: Calendar,
+      permission: "Leave_Manage",
+      submenus: [
+        { name: "Dashboard", path: "/LeaveDashboard" },
+        { name: "Manage Leave Type", path: "/LeaveTypeList" },
+        { name: "Leave Rule", path: "/LeaveRule" },
+        { name: "Leave Allocation", path: "/LeaveAllocation" },
+        { name: "Leave Balance", path: "/LeaveBalance" },
+        { name: "Leave Report", path: "/LeaveReport" },
+      ],
+    },
     { name: "Holidays", path: "/HolidayList", icon: CalendarDays, permission: "Holiday_Manage" },
     { name: "Shifts", path: "/ShiftList", icon: Clock, permission: "Shift_Manage" },
     { name: "Policies", path: "/PolicyList", icon: FileText, permission: "Policy_Manage" },
@@ -49,6 +63,23 @@ const Sidebar = () => {
     localStorage.removeItem("adminData");
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  const handleMenuClick = (menu, index) => {
+    if (menu.submenus) {
+      setOpenMenu(openMenu === index ? null : index);
+    } else {
+      navigate(menu.path);
+      setMobileOpen(false);
+    }
+  };
+
+  const isMenuActive = (menu) => {
+    if (menu.path && location.pathname === menu.path) return true;
+    if (menu.submenus) {
+      return menu.submenus.some((sub) => location.pathname === sub.path);
+    }
+    return false;
   };
 
   return (
@@ -82,20 +113,40 @@ const Sidebar = () => {
               .filter(menu => role === "Admin" || permissions.includes(menu.permission))
               .map((menu, i) => {
                 const Icon = menu.icon;
+                const active = isMenuActive(menu);
+                const open = openMenu === i;
+
                 return (
                   <li key={i}>
-                    <NavLink
-                      to={menu.path}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 p-1 rounded transition-colors ${
-                          isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
-                        }`
-                      }
-                      onClick={() => setMobileOpen(false)}
+                    <button
+                      onClick={() => handleMenuClick(menu, i)}
+                      className={`flex items-center gap-3 p-1 w-full text-left rounded transition-colors ${
+                        active ? "bg-blue-600 text-white" : "hover:bg-gray-700"
+                      }`}
                     >
                       <Icon size={20} />
                       {isOpen && <span>{menu.name}</span>}
-                    </NavLink>
+                    </button>
+
+                    {open && menu.submenus && (
+                      <ul className="pl-8 space-y-1 mt-1">
+                        {menu.submenus.map((sub, j) => (
+                          <li key={j}>
+                            <NavLink
+                              to={sub.path}
+                              className={({ isActive }) =>
+                                `block p-1 rounded text-sm ${
+                                  isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
+                                }`
+                              }
+                              onClick={() => setMobileOpen(false)}
+                            >
+                              {isOpen && sub.name}
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 );
               })}

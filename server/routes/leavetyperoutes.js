@@ -6,7 +6,7 @@ const {
   getAllLeaveTypes,
   updateLeaveType,
   deleteLeaveType,
-} = require("../controllers/leaveTypeController");
+} = require("../controllers/leavetypecontroller");
 
 router.get("/next-id", getNextLeaveTypeID);
 router.post("/", createLeaveType);

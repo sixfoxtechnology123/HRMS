@@ -25,19 +25,20 @@ exports.getNextLeaveTypeID = async (req, res) => {
 // Create leave type
 exports.createLeaveType = async (req, res) => {
   try {
-    const { leaveTypeID, leaveName, leaveCode, annualQuota, carryForward, status } = req.body;
+    const { leaveTypeID, leaveName, leaveCode, annualQuota, carryForward, status,remarks } = req.body;
 
-    if (!leaveTypeID || !leaveName || !leaveCode || !annualQuota) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+    // if (!leaveTypeID || !leaveName ) {
+    //   return res.status(400).json({ message: "All fields are required" });
+    // }
 
     const leaveType = new LeaveType({
       leaveTypeID,
       leaveName,
       leaveCode,
-      annualQuota,
-      carryForward,
-      status,
+      // annualQuota,
+      // carryForward,
+      // status,
+      remarks
     });
 
     const savedLeaveType = await leaveType.save();

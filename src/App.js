@@ -21,14 +21,13 @@ import PayrollComponentMaster from "./Master/PayrollComponentMaster";
 import PayrollComponentList from "./Master/PayrollComponentList";
 import EmployeeMaster from "./Master/EmployeeMaster";
 import EmployeeList from "./Master/EmployeeList";
+import LeaveDashboard from "./Master/LeaveDashboard";
 import Dashboard from "./component/Dashboard";
 import AdminLogin from "./component/AdminLogin";
 import EditProfile from "./component/EditProfile";
 import ChangePassword from "./component/ChangePassword";
 import AdminManagement from "./component/AdminManagement";
 import { Toaster } from "react-hot-toast";
-
-
 
 export default function App(){
   return (
@@ -60,6 +59,7 @@ export default function App(){
       <Route path="/EditProfile" element={<EditProfile/>} />
       <Route path="/ChangePassword" element={<ChangePassword/>} />
       <Route path="/AdminManagement" element={<AdminManagement/>} />
+      <Route path="/LeaveDashboard" element={<LeaveDashboard/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

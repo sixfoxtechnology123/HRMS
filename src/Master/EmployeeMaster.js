@@ -8,7 +8,6 @@ import toast from "react-hot-toast";
 
 const EmployeeMaster = () => {
   const [step, setStep] = useState(1);
-
   const [employeeID, setEmployeeID] = useState("");
   const [salutation, setSalutation] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -20,8 +19,8 @@ const EmployeeMaster = () => {
   const [subCaste, setSubCaste] = useState("");
   const [religion, setReligion] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("No");
-  const [departmentID, setDepartmentID] = useState("");
-  const [designationID, setDesignationID] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [designationName, setDesignationName] = useState("");
   const [dob, setDob] = useState("");
   const [dor, setDor] = useState("");
   const [doj, setDoj] = useState("");
@@ -160,16 +159,27 @@ const navigate = useNavigate();
       console.error("Error fetching master data:", err);
     }
   };
-
   const fetchEmployees = async () => {
     try {
       const res = await axios.get("http://localhost:5001/api/employees");
-      setEmployees(res.data.items || []);
-
+      setEmployees(res.data); // store all employees
     } catch (err) {
-      console.error("Error fetching employees:", err);
+      console.error("Failed to fetch employees:", err);
     }
   };
+  useEffect(() => {
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get("http://localhost:5001/api/employees");
+      setEmployees(res.data); // store all employees
+    } catch (err) {
+      console.error("Failed to fetch employees:", err);
+    }
+  };
+
+  fetchEmployees();
+}, []);
+
 
   const handleFileChange = (e) => setProfileImage(e.target.files[0]);
 
@@ -214,8 +224,8 @@ const payload = {
   subCaste,
   religion,
   maritalStatus,
-  departmentID: departmentID || null,
-  designationID: designationID || null,
+  departmentName: departmentName || null,  
+  designationName: designationName || null,
   dob,
   dor,
   doj,
@@ -362,18 +372,20 @@ const payload = {
                   Service Details
                 </h3>
 
-                <Select
+               <Select
                   label="Department *"
-                  value={departmentID}
-                  onChange={setDepartmentID}
+                  value={departmentName}
+                  onChange={(value) => setDepartmentName(value)}
                   options={departments}
                 />
+
                 <Select
                   label="Designation *"
-                  value={designationID}
-                  onChange={setDesignationID}
+                  value={designationName}
+                  onChange={(value) => setDesignationName(value)}
                   options={designations}
                 />
+
                 <Input
                   type="date"
                   label="Date of Birth *"
@@ -431,24 +443,26 @@ const payload = {
                     className="w-full text-sm border border-gray-300 rounded p-1"
                   />
                 </div>
-                <Select
+               <Select
                   label="Reporting Authority"
                   value={reportingAuthority}
-                  onChange={setReportingAuthority}
+                  onChange={(value) => setReportingAuthority(value)}
                   options={employees.map((e) => ({
                     value: e._id,
-                    label: `${e.firstName} ${e.lastName}-${e.employeeID}`,
+                    label: `${e.salutation || ""} ${e.firstName || ""} ${e.middleName || ""} ${e.lastName || ""} - ${e.employeeID}`.trim(),
                   }))}
                 />
+
                 <Select
                   label="Leave Sanctioning Authority"
                   value={leaveAuthority}
-                  onChange={setLeaveAuthority}
+                  onChange={(value) => setLeaveAuthority(value)}
                   options={employees.map((e) => ({
                     value: e._id,
-                    label: `${e.firstName} ${e.lastName}-${e.employeeID}`,
+                    label: `${e.salutation || ""} ${e.firstName || ""} ${e.middleName || ""} ${e.lastName || ""} - ${e.employeeID}`.trim(),
                   }))}
                 />
+
 
                 <div className="col-span-full flex justify-between mt-4">
                   <BackButton />

@@ -87,8 +87,8 @@ const EmployeeSchema = new mongoose.Schema(
     religion: { type: String, default: "" },
     maritalStatus: { type: String, default: "No" },
 
-    departmentID: { type: mongoose.Schema.Types.ObjectId, ref: "Department", default: null },
-    designationID: { type: mongoose.Schema.Types.ObjectId, ref: "Designation", default: null },
+    departmentName: { type: String, default: "" }, // store department name
+  designationName: { type: String, default: "" },
 
     dob: { type: String, default: "" },
     dor: { type: String, default: "" },

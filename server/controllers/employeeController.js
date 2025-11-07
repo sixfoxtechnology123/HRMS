@@ -1,10 +1,11 @@
 const Employee = require("../models/Employee");
 const Activity = require("../models/Activity");
+const Department = require("../models/Department");
+const Designation = require("../models/Designation");
 
 // Auto-generate EmployeeID: EMP1, EMP2, EMP3...
 const generateEmployeeID = async () => {
   try {
-    // Get the last created employee, sorted by createdAt descending
     const lastEmp = await Employee.findOne().sort({ createdAt: -1 }).lean();
     let next = 1;
 
@@ -40,15 +41,18 @@ exports.createEmployee = async (req, res) => {
       req.body.employeeID = await generateEmployeeID();
     }
 
-    // // Required fields
-    // const required = ["firstName", "lastName", "dob",];
-    // for (const field of required) {
-    //   if (!req.body[field]) {
-    //     return res.status(400).json({ message: `Field ${field} is required` });
-    //   }
-    // }
+    const { departmentID, designationID } = req.body;
 
-    const emp = new Employee({ ...req.body });
+    // Fetch department and designation names
+    const department = departmentID ? await Department.findById(departmentID).lean() : null;
+    const designation = designationID ? await Designation.findById(designationID).lean() : null;
+
+    const emp = new Employee({
+      ...req.body,
+      departmentName: department ? department.deptName : "",
+      designationName: designation ? designation.designationName : "",
+    });
+
     const saved = await emp.save();
 
     // Log activity
@@ -90,6 +94,18 @@ exports.getManagers = async (req, res) => {
 // PUT /api/employees/:id
 exports.updateEmployee = async (req, res) => {
   try {
+    const { departmentID, designationID } = req.body;
+
+    if (departmentID) {
+      const department = await Department.findById(departmentID).lean();
+      req.body.departmentName = department ? department.deptName : "";
+    }
+
+    if (designationID) {
+      const designation = await Designation.findById(designationID).lean();
+      req.body.designationName = designation ? designation.designationName : "";
+    }
+
     const updated = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: "Employee not found" });
 

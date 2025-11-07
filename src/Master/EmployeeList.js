@@ -94,40 +94,44 @@ const EmployeeList = () => {
       <table className="w-full table-auto border border-green-500">
         <thead className="bg-gray-200 text-sm">
           <tr>
+            <th className="border border-green-500 px-2 py-1">Sl No</th>
             <th className="border border-green-500 px-2 py-1">Emp ID</th>
             <th className="border border-green-500 px-2 py-1">Name</th>
-            <th className="border border-green-500 px-2 py-1">Email</th>
-            <th className="border border-green-500 px-2 py-1">Department</th>
+            {/* <th className="border border-green-500 px-2 py-1">Email</th>
+            <th className="border border-green-500 px-2 py-1">Department</th> */}
             <th className="border border-green-500 px-2 py-1">Designation</th>
-            <th className="border border-green-500 px-2 py-1">Employment</th>
+            <th className="border border-green-500 px-2 py-1">Mobile No.</th>
+            {/* <th className="border border-green-500 px-2 py-1">Employment</th>
             <th className="border border-green-500 px-2 py-1">Work Location</th>
             <th className="border border-green-500 px-2 py-1">Contact</th>
-            <th className="border border-green-500 px-2 py-1">Status</th>
+            <th className="border border-green-500 px-2 py-1">Status</th> */}
             <th className="border border-green-500 px-2 py-1">Action</th>
           </tr>
         </thead>
         <tbody className="text-sm text-center">
           {employees.length ? (
-            employees.map((e) => (
+            employees.map((e,index) => (
               <tr key={e._id} className="hover:bg-gray-100 transition">
+                <td className="border border-green-500 px-2 py-1">{index+1}</td>
                 <td className="border border-green-500 px-2 py-1">{e.employeeID}</td>
                 <td className="border border-green-500 px-2 py-1">
                   {e.firstName} {e.lastName}
                 </td>
-                <td className="border border-green-500 px-2 py-1">{e.email}</td>
+                {/* <td className="border border-green-500 px-2 py-1">{e.email}</td> */}
 
-                {/* Show ONLY department name (from code) */}
+                {/* Show ONLY department name (from code)
                 <td className="border border-green-500 px-2 py-1">
                   {deptMap[e.departmentID] || e.departmentID}
-                </td>
+                </td> */}
 
                 <td className="border border-green-500 px-2 py-1">
                   {desigMap[e.designationID] || e.designationID}
                 </td>
-                <td className="border border-green-500 px-2 py-1">{e.employmentType}</td>
+                <td className="border border-green-500 px-2 py-1">{e.permanentAddress.mobile}</td>
+                {/* <td className="border border-green-500 px-2 py-1">{e.employmentType}</td>
                 <td className="border border-green-500 px-2 py-1">{e.workLocation}</td>
                 <td className="border border-green-500 px-2 py-1">{e.contactNo}</td>
-                <td className="border border-green-500 px-2 py-1">{e.status}</td>
+                <td className="border border-green-500 px-2 py-1">{e.status}</td> */}
                 <td className="border border-green-500 px-2 py-1">
                   <div className="flex justify-center gap-8">
                     <button
