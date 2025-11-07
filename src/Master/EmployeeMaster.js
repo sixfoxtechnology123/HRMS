@@ -1,358 +1,1603 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Sidebar from "../component/Sidebar";
 import BackButton from "../component/BackButton";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 
 const EmployeeMaster = () => {
+  const [step, setStep] = useState(1);
+
   const [employeeID, setEmployeeID] = useState("");
+  const [salutation, setSalutation] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("Male");
-  const [dob, setDob] = useState("");
-  const [doj, setDoj] = useState("");
+  const [fatherName, setFatherName] = useState("");
+  const [spouseName, setSpouseName] = useState("");
+  const [caste, setCaste] = useState("");
+  const [subCaste, setSubCaste] = useState("");
+  const [religion, setReligion] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState("No");
   const [departmentID, setDepartmentID] = useState("");
   const [designationID, setDesignationID] = useState("");
-  const [employmentType, setEmploymentType] = useState("Full-time");
-  const [workLocation, setWorkLocation] = useState("Office");
-  const [contactNo, setContactNo] = useState("");
-  const [email, setEmail] = useState("");
-  const [reportingManagerID, setReportingManagerID] = useState("");
-  const [status, setStatus] = useState("Active");
+  const [dob, setDob] = useState("");
+  const [dor, setDor] = useState("");
+  const [doj, setDoj] = useState("");
+  const [confirmationDate, setConfirmationDate] = useState("");
+  const [nextIncrementDate, setNextIncrementDate] = useState("");
+  const [eligiblePromotion, setEligiblePromotion] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+  const [reportingAuthority, setReportingAuthority] = useState("");
+  const [leaveAuthority, setLeaveAuthority] = useState("");
 
-  // NORMALIZED masters
-  const [departments, setDepartments] = useState([]); // [{id, name}]
-  const [designations, setDesignations] = useState([]); // pass-through (uses designationID/designationName)
-  const [managers, setManagers] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [educationDetails, setEducationDetails] = useState([
+    {
+      qualification: "",
+      discipline: "",
+      institute: "",
+      board: "",
+      year: "",
+      percentage: "",
+      grade: "",
+    },
+  ]);
+    // Step 3 States
+const [nomineeDetails, setNomineeDetails] = useState([
+    { name: "", relation: "", share: "", age: "", address: "" },
+  ]);
+const [bloodGroup, setBloodGroup] = useState("");
+const [eyeSightLeft, setEyeSightLeft] = useState("");
+const [eyeSightRight, setEyeSightRight] = useState("");
+const [familyPlanStatus, setFamilyPlanStatus] = useState("");
+const [familyPlanDate, setFamilyPlanDate] = useState("");
+const [height, setHeight] = useState("");
+const [weight, setWeight] = useState("");
+const [identificationMark1, setIdentificationMark1] = useState("");
+const [identificationMark2, setIdentificationMark2] = useState("");
+const [physicallyChallenged, setPhysicallyChallenged] = useState("");
 
-  const navigate = useNavigate();
-  const location = useLocation();
+const [permanentAddress, setPermanentAddress] = useState({
+  street: "",
+  village: "",
+  city: "",
+  postOffice: "",
+  policeStation: "",
+  pinCode: "",
+  district: "",
+  state: "",
+  country: "INDIA",
+  mobile: "",
+  email: "",
+});
+
+const [presentAddress, setPresentAddress] = useState({
+  street: "",
+  village: "",
+  city: "",
+  postOffice: "",
+  policeStation: "",
+  pinCode: "",
+  district: "",
+  state: "",
+  country: "INDIA",
+  mobile: "",
+  email: "",
+});
+
+const [sameAsPermanent, setSameAsPermanent] = useState(false);
+const [basicPay, setBasicPay] = useState("");
+const [pfType, setPfType] = useState("");
+const [passportNo, setPassportNo] = useState("");
+const [pfNo, setPfNo] = useState("");
+const [uanNo, setUanNo] = useState("");
+const [panNo, setPanNo] = useState("");
+const [bankName, setBankName] = useState("");
+const [branch, setBranch] = useState("");
+const [ifscCode, setIfscCode] = useState("");
+const [accountNo, setAccountNo] = useState("");
+const [payLevel, setPayLevel] = useState("");
+const [aadhaarNo, setAadhaarNo] = useState("");
+
+const [earningDetails, setEarningDetails] = useState([
+  { headName: "", headType: "", value: "" }
+]);
+
+const [deductionDetails, setDeductionDetails] = useState([
+  { headName: "", headType: "", value: "" }
+]);
+
+const navigate = useNavigate();
+
+
+  const handleDobChange = (val) => {
+    setDob(val);
+    if (val) {
+      const dobDate = new Date(val);
+      dobDate.setFullYear(dobDate.getFullYear() + 60);
+      setDor(dobDate.toISOString().split("T")[0]);
+    } else setDor("");
+  };
 
   useEffect(() => {
-    const loadMasters = async () => {
-      try {
-        const [deptRes, desigRes, mgrRes] = await Promise.all([
-          axios.get("http://localhost:5001/api/departments"),
-          axios.get("http://localhost:5001/api/designations"),
-          axios.get("http://localhost:5001/api/employees/managers"),
-        ]);
-
-        // --- Normalize departments to { id, name } ---
-        const depts = (deptRes.data || [])
-          .map((d) => ({
-            id:
-              d.departmentID ||
-              d.deptCode ||
-              d.code ||
-              d.id ||
-              "", // code to store
-            name:
-              d.departmentName ||
-              d.deptName ||
-              d.name ||
-              "", // human name to show
-          }))
-          .filter((x) => x.id && x.name);
-        setDepartments(depts);
-
-        setDesignations(desigRes.data || []);
-        setManagers(mgrRes.data || []);
-      } catch (e) {
-        console.error("Master fetch error:", e);
-      }
-    };
+    fetchNextEmployeeID();
     loadMasters();
-
-    if (location.state?.employee) {
-      const e = location.state.employee;
-      setEmployeeID(e.employeeID);
-      setFirstName(e.firstName || "");
-      setLastName(e.lastName || "");
-      setGender(e.gender || "Male");
-      setDob(e.dob ? e.dob.substring(0, 10) : "");
-      setDoj(e.doj ? e.doj.substring(0, 10) : "");
-      setDepartmentID(e.departmentID || ""); // will be the code
-      setDesignationID(e.designationID || "");
-      setEmploymentType(e.employmentType || "Full-time");
-      setWorkLocation(e.workLocation || "Office");
-      setContactNo(e.contactNo || "");
-      setEmail(e.email || "");
-      setReportingManagerID(e.reportingManagerID || "");
-      setStatus(e.status || "Active");
-      setEditId(e._id);
-      setIsEditMode(true);
-    } else {
-      fetchNextEmployeeID();
-      setIsEditMode(false);
-    }
-  }, [location.state]);
+    fetchEmployees();
+  }, []);
 
   const fetchNextEmployeeID = async () => {
     try {
       const res = await axios.get("http://localhost:5001/api/employees/next-id");
       setEmployeeID(res.data.employeeID);
-    } catch (e) {
-      console.error("Next ID error:", e);
-    }
-  };
-
-  const validate = () => {
-    if (!firstName.trim() || !lastName.trim() || !dob || !doj || !departmentID || !designationID) {
-      alert("Please fill all required fields (*)");
-      return false;
-    }
-    if (contactNo && !/^\d{10,15}$/.test(contactNo)) {
-      alert("Contact No must be 10–15 digits");
-      return false;
-    }
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
-      alert("Please enter a valid email");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSaveOrUpdate = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    try {
-      const payload = {
-        employeeID,
-        firstName,
-        lastName,
-        gender,
-        dob,
-        doj,
-        departmentID,  // code only
-        designationID, // code only
-        employmentType,
-        workLocation,
-        contactNo,
-        email,
-        reportingManagerID: reportingManagerID || null,
-        status,
-      };
-
-      if (isEditMode) {
-        await axios.put(`http://localhost:5001/api/employees/${editId}`, payload);
-        alert("Employee updated successfully");
-      } else {
-        await axios.post("http://localhost:5001/api/employees", payload);
-        alert("Employee saved successfully");
-      }
-      navigate("/employeeList", { replace: true });
     } catch (err) {
-      console.error("Save/Update Error:", err);
-      alert("Failed to save/update employee");
+      console.error("Error fetching next employee ID:", err);
     }
   };
+
+  const loadMasters = async () => {
+    try {
+      const [deptRes, desigRes] = await Promise.all([
+        axios.get("http://localhost:5001/api/departments"),
+        axios.get("http://localhost:5001/api/designations"),
+      ]);
+
+      setDepartments(
+        (deptRes.data || []).map((d) => ({ value: d._id, label: d.deptName }))
+      );
+      setDesignations(
+        (desigRes.data || []).map((d) => ({
+          value: d._id,
+          label: d.designationName,
+        }))
+      );
+    } catch (err) {
+      console.error("Error fetching master data:", err);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get("http://localhost:5001/api/employees");
+      setEmployees(res.data.items || []);
+
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    }
+  };
+
+  const handleFileChange = (e) => setProfileImage(e.target.files[0]);
+
+  const handleAddRow = () =>
+    setEducationDetails([
+      ...educationDetails,
+      {
+        qualification: "",
+        discipline: "",
+        institute: "",
+        board: "",
+        year: "",
+        percentage: "",
+        grade: "",
+      },
+    ]);
+
+  const handleRemoveRow = (index) => {
+    const updated = [...educationDetails];
+    updated.splice(index, 1);
+    setEducationDetails(updated);
+  };
+
+  const handleEduChange = (index, field, value) => {
+    const updated = [...educationDetails];
+    updated[index][field] = value;
+    setEducationDetails(updated);
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+const payload = {
+  employeeID,
+  salutation,
+  firstName,
+  middleName,
+  lastName,
+  fatherName,
+  spouseName,
+  caste,
+  subCaste,
+  religion,
+  maritalStatus,
+  departmentID: departmentID || null,
+  designationID: designationID || null,
+  dob,
+  dor,
+  doj,
+  confirmationDate,
+  nextIncrementDate,
+  eligiblePromotion,
+  employmentType,
+  profileImage,
+  reportingAuthority: reportingAuthority || null,
+  leaveAuthority: leaveAuthority || null,
+  educationDetails,
+  nominees: nomineeDetails,
+  medical: {
+    bloodGroup,
+    eyeSightLeft,
+    eyeSightRight,
+    familyPlanStatus,
+    familyPlanDate,
+    height,
+    weight,
+    identification1: identificationMark1,
+    identification2: identificationMark2,
+    physicallyChallenged,
+  },
+  permanentAddress,
+  presentAddress,
+  payDetails: {
+    basicPay,
+    pfType,
+    passportNo,
+    pfNo,
+    uanNo,
+    panNo,
+    bankName,
+    branch,
+    ifscCode,
+    accountNo,
+    payLevel,
+    aadhaarNo,
+  },
+  earnings: earningDetails,
+  deductions: deductionDetails,
+};
+
+  try {
+   const res = await axios.post("http://localhost:5001/api/employees", payload);
+
+    console.log("Employee saved", res.data);
+    toast.success("Employee saved successfully!");
+    navigate("/EmployeeList"); 
+  } catch (err) {
+    console.error("Failed to save employee:", err.response?.data || err.message);
+    toast.error("Failed to save employee: " + (err.response?.data?.message || err.message));
+  }
+};
+
+
+
 
   return (
-    <div className="min-h-screen bg-zinc-300 flex items-center justify-center">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-6xl">
-        <h2 className="text-2xl font-bold mb-4 text-center text-black">
-          {isEditMode ? "Update Employee" : "Employee"}
-        </h2>
+    <div className="min-h-screen bg-zinc-300 flex">
+        <Sidebar />
 
-        <form
-          onSubmit={handleSaveOrUpdate}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          <div>
-            <label className="block font-medium">Employee ID</label>
-            <input
-              type="text"
-              value={employeeID}
-              readOnly
-              className="w-full border border-gray-300 p-1 rounded bg-gray-100 cursor-not-allowed"
-            />
-          </div>
+        <div className="flex-1 p-3 overflow-y-auto">
+          <div className="bg-white min-h-screen shadow-lg rounded-lg p-4 w-full">
+          {/* ===================== STEP 1 ===================== */}
+         
+          {step === 1 && (
+            <>
+              <h2 className="text-2xl font-semibold mb-4 text-center text-black">
+                Employee
+              </h2>
 
-          <div>
-            <label className="block font-medium">First Name *</label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-1 border rounded"
-            />
-          </div>
+              <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                Personal and Service Details
+              </h3>
 
-          <div>
-            <label className="block font-medium">Last Name *</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full p-1 border rounded"
-            />
-          </div>
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Input label="Employee ID" value={employeeID} readOnly />
+                <Select
+                  label="Salutation"
+                  value={salutation}
+                  onChange={setSalutation}
+                  options={["Mr.", "Mrs.", "Ms.", "Dr."]}
+                />
+                <Input
+                  label="First Name *"
+                  value={firstName}
+                  onChange={(val) =>
+                    setFirstName(val.replace(/\s/g, "").toUpperCase())
+                  }
+                />
+                <Input
+                  label="Middle Name"
+                  value={middleName}
+                  onChange={(val) =>
+                    setMiddleName(val.replace(/\s/g, "").toUpperCase())
+                  }
+                />
+                <Input
+                  label="Last Name"
+                  value={lastName}
+                  onChange={(val) =>
+                    setLastName(val.replace(/\s/g, "").toUpperCase())
+                  }
+                />
+                <Input
+                  label="Father's Name *"
+                  value={fatherName}
+                  onChange={(val) => setFatherName(val.toUpperCase())}
+                />
+                <Input
+                  label="Spouse Name"
+                  value={spouseName}
+                  onChange={(val) => setSpouseName(val.toUpperCase())}
+                />
+                <Select
+                  label="Caste"
+                  value={caste}
+                  onChange={setCaste}
+                  options={[
+                    "General",
+                    "OBC-I",
+                    "OBC-II",
+                    "SC",
+                    "ST",
+                    "Other",
+                  ]}
+                />
+                <Select
+                  label="Religion"
+                  value={religion}
+                  onChange={setReligion}
+                  options={["Hindu", "Muslim", "Christian", "Sikh", "Other"]}
+                />
+                <Select
+                  label="Marital Status"
+                  value={maritalStatus}
+                  onChange={setMaritalStatus}
+                  options={["Yes", "No"]}
+                />
 
-          <div>
-            <label className="block font-medium">Gender</label>
-            <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option>Male</option>
-              <option>Female</option>
-              <option>Other</option>
-            </select>
-          </div>
+                <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                  Service Details
+                </h3>
 
-          <div>
-            <label className="block font-medium">DOB *</label>
-            <input
-              type="date"
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
-              className="w-full p-1 border rounded"
-            />
-          </div>
+                <Select
+                  label="Department *"
+                  value={departmentID}
+                  onChange={setDepartmentID}
+                  options={departments}
+                />
+                <Select
+                  label="Designation *"
+                  value={designationID}
+                  onChange={setDesignationID}
+                  options={designations}
+                />
+                <Input
+                  type="date"
+                  label="Date of Birth *"
+                  value={dob}
+                  onChange={handleDobChange}
+                />
+                <Input
+                  type="date"
+                  label="Date of Retirement"
+                  value={dor}
+                  onChange={setDor}
+                />
+                <Input
+                  type="date"
+                  label="Date of Joining *"
+                  value={doj}
+                  onChange={setDoj}
+                />
+                <Input
+                  type="date"
+                  label="Confirmation Date"
+                  value={confirmationDate}
+                  onChange={setConfirmationDate}
+                />
+                <Input
+                  type="date"
+                  label="Next Increment Date"
+                  value={nextIncrementDate}
+                  onChange={setNextIncrementDate}
+                />
+                <Select
+                  label="Eligible for Promotion"
+                  value={eligiblePromotion}
+                  onChange={setEligiblePromotion}
+                  options={["Yes", "No"]}
+                />
+                <Select
+                  label="Employee Type *"
+                  value={employmentType}
+                  onChange={setEmploymentType}
+                  options={[
+                    "TEMPORARY",
+                    "PERMANENT",
+                    "PROBATIONARY EMPLOYEE",
+                    "EX-EMPLOYEE",
+                    "CONTRACT",
+                  ]}
+                />
+                <div>
+                  <label className="block text-sm">Profile Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full text-sm border border-gray-300 rounded p-1"
+                  />
+                </div>
+                <Select
+                  label="Reporting Authority"
+                  value={reportingAuthority}
+                  onChange={setReportingAuthority}
+                  options={employees.map((e) => ({
+                    value: e._id,
+                    label: `${e.firstName} ${e.lastName}-${e.employeeID}`,
+                  }))}
+                />
+                <Select
+                  label="Leave Sanctioning Authority"
+                  value={leaveAuthority}
+                  onChange={setLeaveAuthority}
+                  options={employees.map((e) => ({
+                    value: e._id,
+                    label: `${e.firstName} ${e.lastName}-${e.employeeID}`,
+                  }))}
+                />
 
-          <div>
-            <label className="block font-medium">DOJ *</label>
-            <input
-              type="date"
-              value={doj}
-              onChange={(e) => setDoj(e.target.value)}
-              className="w-full p-1 border rounded"
-            />
-          </div>
+                <div className="col-span-full flex justify-between mt-4">
+                  <BackButton />
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="flex items-center gap-1 px-3 py-1 rounded text-white bg-sky-600 hover:bg-sky-700"
+                  >
+                    <span>Next</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
 
-          {/* Department */}
-          <div>
-            <label className="block font-medium">Department *</label>
-            <select
-              value={departmentID}
-              onChange={(e) => setDepartmentID(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option value="">-- Select Department --</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} - {d.id}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* ===================== STEP 2 ===================== */}
+          {step === 2 && (
+            <>
+              <h2 className="text-xl font-semibold text-sky-600 col-span-full">
+                Educational Details
+              </h2>
 
-          {/* Designation */}
-          <div>
-            <label className="block font-medium">Designation *</label>
-            <select
-              value={designationID}
-              onChange={(e) => setDesignationID(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option value="">-- Select Designation --</option>
-              {designations.map((d) => (
-                <option key={d._id || d.designationID} value={d.designationID}>
-                  {d.designationName} - {d.designationID}
-                </option>
-              ))}
-            </select>
-          </div>
+              <table className="w-full border border-gray-400 text-sm mb-4">
+                <thead className="bg-sky-100">
+                  <tr>
+                    <th className="border p-2">S.No.</th>
+                    <th className="border p-2">Qualification</th>
+                    <th className="border p-2">Discipline</th>
+                    <th className="border p-2">Institute Name</th>
+                    <th className="border p-2">Board/University</th>
+                    <th className="border p-2">Year of Passing</th>
+                    <th className="border p-2">Percentage</th>
+                    <th className="border p-2">Grade/Division</th>
+                    <th className="border p-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {educationDetails.map((row, index) => (
+                    <tr key={index}>
+                      <td className="border p-2 text-center">{index + 1}</td>
+                      <td className="border p-2">
+                        <select
+                          value={row.qualification}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "qualification",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        >
+                          <option value="">SELECT</option>
+                          <option value="10TH">10TH</option>
+                          <option value="12TH">12TH</option>
+                          <option value="GRADUATION">GRADUATION</option>
+                          <option value="POST GRADUATION">
+                            POST GRADUATION
+                          </option>
+                        </select>
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.discipline}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "discipline",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.institute}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "institute",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.board}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "board",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.year}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "year",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.percentage}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "percentage",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          value={row.grade}
+                          onChange={(e) =>
+                            handleEduChange(
+                              index,
+                              "grade",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+                      <td className="border p-2 flex text-center">
+                        <button
+                          type="button"
+                          onClick={handleAddRow}
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 rounded mr-1"
+                        >
+                          +
+                        </button>
+                        {educationDetails.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRow(index)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 rounded"
+                          >
+                            -
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          <div>
-            <label className="block font-medium">Employment Type</label>
-            <select
-              value={employmentType}
-              onChange={(e) => setEmploymentType(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Contract</option>
-            </select>
-          </div>
+              <div className="col-span-full flex justify-between mt-4">
+                <button
+                  onClick={() => setStep(1)}
+                  className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                 onClick={() => setStep(3)}
 
-          <div>
-            <label className="block font-medium">Work Location</label>
-            <select
-              value={workLocation}
-              onChange={(e) => setWorkLocation(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option>Office</option>
-              <option>Remote</option>
-              <option>Hybrid</option>
-            </select>
-          </div>
+                  className="flex items-center gap-1 px-3 py-1 rounded text-white bg-sky-600 hover:bg-sky-700"
+                >
+                  <span>Next</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </>
+          )}
+          {/* ===================== STEP 3 ===================== */}
+            {step === 3 && (
+              <>
+                {/* <h2 className="text-2xl font-bold mb-4 text-center text-black">
+                  Nominee, Medical & Address Details
+                </h2> */}
 
-          <div>
-            <label className="block font-medium">Contact No *</label>
-            <input
-              type="text"
-              value={contactNo}
-              onChange={(e) => setContactNo(e.target.value)}
-              className="w-full p-1 border rounded"
-              required
-            />
-          </div>
+                {/* ---------- NOMINEE DETAILS ---------- */}
+                <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                  Nominee Details
+                </h3>
+                <table className="w-full border border-gray-400 text-sm mb-4">
+                  <thead className="bg-sky-100">
+                    <tr>
+                      <th className="border p-2">S.No.</th>
+                      <th className="border p-2">Name</th>
+                      <th className="border p-2">Relation</th>
+                      <th className="border p-2">Date of Birth</th>
+                      <th className="border p-2">Share (%)</th>
+                      <th className="border p-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nomineeDetails.map((row, index) => (
+                      <tr key={index}>
+                        <td className="border p-2 text-center">{index + 1}</td>
+                        <td className="border p-2">
+                          <input
+                            type="text"
+                            value={row.name}
+                            onChange={(e) =>
+                              setNomineeDetails((prev) => {
+                                const updated = [...prev];
+                                updated[index].name = e.target.value.toUpperCase();
+                                return updated;
+                              })
+                            }
+                            className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                          />
+                        </td>
+                        <td className="border p-2">
+                          <input
+                            type="text"
+                            value={row.relation}
+                            onChange={(e) =>
+                              setNomineeDetails((prev) => {
+                                const updated = [...prev];
+                                updated[index].relation = e.target.value.toUpperCase();
+                                return updated;
+                              })
+                            }
+                            className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                          />
+                        </td>
+                               <td className="border p-2">
+                        <input
+                          type="date"
+                          value={row.dob}
+                          onChange={(e) =>
+                            setNomineeDetails((prev) => {
+                              const updated = [...prev];
+                              updated[index].dob = e.target.value;
+                              return updated;
+                            })
+                          }
+                          className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                        </td>
+                        <td className="border p-2">
+                          <input
+                            type="number"
+                            value={row.share}
+                            onChange={(e) =>
+                              setNomineeDetails((prev) => {
+                                const updated = [...prev];
+                                updated[index].share = e.target.value;
+                                return updated;
+                              })
+                            }
+                            className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                          />
+                        </td>
+                
 
-          <div>
-            <label className="block font-medium">Email *</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-1 border rounded"
-              required
-            />
-          </div>
+                      <td className="border p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setNomineeDetails([
+                              ...nomineeDetails,
+                              { name: "", relation: "", dob: "", share: "", address: "" },
+                            ])
+                          }
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 rounded mr-1"
+                        >
+                          +
+                        </button>
+                        {nomineeDetails.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNomineeDetails(nomineeDetails.filter((_, i) => i !== index))
+                            }
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 rounded"
+                          >
+                            -
+                          </button>
+                        )}
+                      </td>
 
-          <div>
-            <label className="block font-medium">Reporting Manager</label>
-            <select
-              value={reportingManagerID}
-              onChange={(e) => setReportingManagerID(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option value="">-- Select Manager --</option>
-              {managers.map((m) => (
-                <option key={m._id} value={m.employeeID}>
-                  {m.employeeID} - {m.firstName} {m.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
 
-          <div>
-            <label className="block font-medium">Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full p-1 border rounded"
-            >
-              <option>Active</option>
-              <option>Inactive</option>
-              <option>Resigned</option>
-              <option>Terminated</option>
-            </select>
-          </div>
+                {/* ---------- MEDICAL DETAILS ---------- */}
+                  <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                    Medical Information
+                  </h3>
 
-          <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-between mt-2">
-            <BackButton type="button" />
-            <button
-              type="submit"
-              className={`px-4 py-1 rounded text-white ${
-                isEditMode
-                  ? "bg-yellow-500 hover:bg-yellow-600"
-                  : "bg-teal-600 hover:bg-teal-700"
-              }`}
-            >
-              {isEditMode ? "Update" : "Save"}
-            </button>
-          </div>
-        </form>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    {/* Blood Group */}
+                    <div>
+                      <label className="block text-sm mb-1">Blood Group</label>
+                      <select
+                        value={bloodGroup}
+                        onChange={(e) => setBloodGroup(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      >
+                        <option value="">Select</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                      </select>
+                    </div>
+
+                    {/* Eye Sight (Left) */}
+                    <div>
+                      <label className="block text-sm mb-1">Eye Sight (Left)</label>
+                      <input
+                        type="text"
+                        value={eyeSightLeft}
+                        onChange={(e) => setEyeSightLeft((e.target.value || "").toUpperCase())}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium uppercase focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Eye Sight (Right) */}
+                    <div>
+                      <label className="block text-sm mb-1">Eye Sight (Right)</label>
+                      <input
+                        type="text"
+                        value={eyeSightRight}
+                        onChange={(e) => setEyeSightRight((e.target.value || "").toUpperCase())}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium uppercase focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Family Plan Status */}
+                    <div>
+                      <label className="block text-sm mb-1">Family Plan Status</label>
+                      <select
+                        value={familyPlanStatus}
+                        onChange={(e) => setFamilyPlanStatus(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      >
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    {/* Family Plan Date */}
+                    <div>
+                      <label className="block text-sm mb-1">Family Plan Date</label>
+                      <input
+                        type="date"
+                        value={familyPlanDate}
+                        onChange={(e) => setFamilyPlanDate(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Height */}
+                    <div>
+                      <label className="block text-sm mb-1">Height (in cm)</label>
+                      <input
+                        type="number"
+                        value={height}
+                        onChange={(e) => setHeight(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Weight */}
+                    <div>
+                      <label className="block text-sm mb-1">Weight (in Kgs)</label>
+                      <input
+                        type="number"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Identification Mark (1) */}
+                    <div>
+                      <label className="block text-sm mb-1">Identification Mark (1)</label>
+                      <input
+                        type="text"
+                        value={identificationMark1}
+                        onChange={(e) =>
+                          setIdentificationMark1((e.target.value || "").toUpperCase())
+                        }
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium uppercase focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Identification Mark (2) */}
+                    <div>
+                      <label className="block text-sm mb-1">Identification Mark (2)</label>
+                      <input
+                        type="text"
+                        value={identificationMark2}
+                        onChange={(e) =>
+                          setIdentificationMark2((e.target.value || "").toUpperCase())
+                        }
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium uppercase focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+
+                    {/* Physically Challenged */}
+                    <div>
+                      <label className="block text-sm mb-1">Physically Challenged</label>
+                      <select
+                        value={physicallyChallenged}
+                        onChange={(e) => setPhysicallyChallenged(e.target.value)}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      >
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                  </div>
+
+
+
+             {/* ---------- ADDRESS DETAILS ---------- */}
+                <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                  Permanent Address
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                  {/* Street */}
+                  <div>
+                    <label className="block text-sm mb-1">Street No. and Name</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.street || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          street: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium 
+                                focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 
+                                transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Village */}
+                  <div>
+                    <label className="block text-sm mb-1">Village</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.village || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          village: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium 
+                                focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="block text-sm mb-1">City</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.city || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          city: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Post Office */}
+                  <div>
+                    <label className="block text-sm mb-1">Post Office</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.postOffice || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          postOffice: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Police Station */}
+                  <div>
+                    <label className="block text-sm mb-1">Police Station</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.policeStation || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          policeStation: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Pin Code */}
+                  <div>
+                    <label className="block text-sm mb-1">Pin Code *</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.pinCode || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          pinCode: e.target.value.toUpperCase(),
+                        })
+                      }
+                    
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* District */}
+                  <div>
+                    <label className="block text-sm mb-1">District</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.district || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          district: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* State */}
+                  <div>
+                    <label className="block text-sm mb-1">State *</label>
+                    <select
+                      value={permanentAddress.state || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          state: e.target.value.toUpperCase(),
+                        })
+                      }
+                    
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    >
+                      <option value="">Select</option>
+                      <option value="MAHARASHTRA">Maharashtra</option>
+                      <option value="GUJARAT">Gujarat</option>
+                      <option value="KARNATAKA">Karnataka</option>
+                      <option value="TAMIL NADU">Tamil Nadu</option>
+                      <option value="DELHI">Delhi</option>
+                      <option value="UTTAR PRADESH">Uttar Pradesh</option>
+                      <option value="WEST BENGAL">West Bengal</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Country */}
+                  <div>
+                    <label className="block text-sm mb-1">Country</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.country || "INDIA"}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          country: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Mobile */}
+                  <div>
+                    <label className="block text-sm mb-1">Mobile No.</label>
+                    <input
+                      type="text"
+                      value={permanentAddress.mobile || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          mobile: e.target.value.toUpperCase(),
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={permanentAddress.email || ""}
+                      onChange={(e) =>
+                        setPermanentAddress({
+                          ...permanentAddress,
+                          email: e.target.value.toLowerCase(), // Keep lowercase for valid email format
+                        })
+                      }
+                      className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                    />
+                  </div>
+                </div>
+
+                {/* ---------- PRESENT ADDRESS ---------- */}
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-semibold text-sky-600 col-span-full">Present Address</h3>
+                  <label className="flex items-center space-x-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={sameAsPermanent}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setSameAsPermanent(checked);
+                        if (checked) {
+                          setPresentAddress(permanentAddress);
+                        } else {
+                          setPresentAddress({
+                            street: "",
+                            village: "",
+                            city: "",
+                            postOffice: "",
+                            policeStation: "",
+                            pinCode: "",
+                            district: "",
+                            state: "",
+                            country: "INDIA",
+                            mobile: "",
+                            email: "",
+                          });
+                        }
+                      }}
+                    />
+                    <span className="font-bold">Same as Permanent Address</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                  {[
+                    "street",
+                    "village",
+                    "city",
+                    "postOffice",
+                    "policeStation",
+                    "pinCode",
+                    "district",
+                    "state",
+                    "country",
+                    "mobile",
+                    "email",
+                  ].map((field, i) => (
+                    <div key={i}>
+                      <label className="block text-sm mb-1 capitalize">
+                        {field === "pinCode"
+                          ? "Pin Code *"
+                          : field === "postOffice"
+                          ? "Post Office"
+                          : field === "policeStation"
+                          ? "Police Station"
+                          : field === "mobile"
+                          ? "Mobile No."
+                          : field === "email"
+                          ? "Email"
+                          : field}
+                      </label>
+                      <input
+                        type={field === "email" ? "email" : "text"}
+                        value={presentAddress[field] || ""}
+                        onChange={(e) =>
+                          setPresentAddress({
+                            ...presentAddress,
+                            [field]:
+                              field === "email"
+                                ? e.target.value.toLowerCase()
+                                : e.target.value.toUpperCase(),
+                          })
+                        }
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none 
+                                  focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+
+                <div className="col-span-full flex justify-between mt-4">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                   onClick={() => setStep(4)}
+                    className="flex items-center gap-1 px-3 py-1 rounded text-white bg-sky-600 hover:bg-sky-700"
+                  >
+                    <span>Next</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {step === 4 && (
+            <div className="bg-white min-h-screen shadow-lg rounded-lg p-4 w-full">
+              <h2 className="text-xl mb-3 font-semibold text-sky-600">
+                Pay Details
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Input label="Basic Pay (*)" type="number" value={basicPay} onChange={setBasicPay} />
+
+                <Select
+                  label="PF Type (*)"
+                  value={pfType}
+                  onChange={setPfType}
+                  options={["PF", "NPS","CPF","NA"]}
+                />
+
+                <Input label="Passport No." value={passportNo} onChange={setPassportNo} />
+                <Input label="PF No." value={pfNo} onChange={setPfNo} />
+                <Input label="UAN No." value={uanNo} onChange={setUanNo} />
+                <Input label="Pan No." value={panNo} onChange={setPanNo} />
+
+                <Select
+                  label="Bank Name (*)"
+                  value={bankName}
+                  onChange={setBankName}
+              options={[
+                      // --- PUBLIC SECTOR BANKS ---
+                      "STATE BANK OF INDIA",
+                      "PUNJAB NATIONAL BANK",
+                      "BANK OF BARODA",
+                      "CANARA BANK",
+                      "UNION BANK OF INDIA",
+                      "BANK OF INDIA",
+                      "INDIAN BANK",
+                      "CENTRAL BANK OF INDIA",
+                      "UCO BANK",
+                      "BANK OF MAHARASHTRA",
+                      "INDIAN OVERSEAS BANK",
+                      "PUNJAB & SIND BANK",
+
+                      // --- PRIVATE SECTOR BANKS ---
+                      "HDFC BANK",
+                      "ICICI BANK",
+                      "AXIS BANK",
+                      "KOTAK MAHINDRA BANK",
+                      "INDUSIND BANK",
+                      "YES BANK",
+                      "IDFC FIRST BANK",
+                      "RBL BANK",
+                      "FEDERAL BANK",
+                      "CSB BANK",
+                      "KARUR VYSYA BANK",
+                      "SOUTH INDIAN BANK",
+                      "CITY UNION BANK",
+                      "DCB BANK",
+                      "TAMILNAD MERCANTILE BANK",
+                      "BANDHAN BANK",
+
+                      // --- SMALL FINANCE BANKS ---
+                      "AU SMALL FINANCE BANK",
+                      "EQUITAS SMALL FINANCE BANK",
+                      "UTKARSH SMALL FINANCE BANK",
+                      "UJJIVAN SMALL FINANCE BANK",
+                      "SURYODAY SMALL FINANCE BANK",
+                      "ESAF SMALL FINANCE BANK",
+                      "NORTH EAST SMALL FINANCE BANK",
+                      "JANASEVA SMALL FINANCE BANK",
+                    ]}
+                />
+
+                <Select
+                  label="Branch (*)"
+                  value={branch}
+                  onChange={setBranch}
+                  options={["MAIN BRANCH", "SUB BRANCH"]}
+                />
+
+                <Input label="IFSC Code (*)" value={ifscCode} onChange={setIfscCode} />
+                <Input label="Account No. (*)" value={accountNo} onChange={setAccountNo} />
+
+                <Select
+                  label="Pay Level / Grade"
+                  value={payLevel}
+                  onChange={setPayLevel}
+                  options={["LEVEL 1", "LEVEL 2", "LEVEL 3", "LEVEL 4"]}
+                />
+
+                <Input label="Aadhar No." value={aadhaarNo} onChange={setAadhaarNo} />
+              </div>
+
+              {/* --- BUTTONS --- */}
+              <div className="col-span-full flex justify-between mt-4">
+                  <button
+                    onClick={() => setStep(3)}
+                    className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                   onClick={() => setStep(5)}
+                    className="flex items-center gap-1 px-3 py-1 rounded text-white bg-sky-600 hover:bg-sky-700"
+                  >
+                    <span>Next</span>
+                    <span>→</span>
+                  </button>
+                </div>
+            </div>
+          )}
+
+          {/* ---------- STEP 5 : PAY STRUCTURE ---------- */}
+            {step === 5 && (
+            <div className="bg-white min-h-screen shadow-lg rounded-lg p-4 w-full">
+              <h3 className="text-xl font-semibold text-sky-600 col-span-full">
+                PAY STRUCTURE
+              </h3>
+
+              {/* ===== EARNING TABLE ===== */}
+              <h4 className="text-lg font-semibold text-white mb-2 pl-2 bg-blue-700 rounded-sm">EARNING</h4>
+              <table className="w-full border border-gray-300 mb-6 text-sm font-medium">
+                <thead className="bg-sky-100">
+                  <tr>
+                    <th className="border p-2 w-16">SL.NO.</th>
+                    <th className="border p-2">HEAD NAME</th>
+                    <th className="border p-2">HEAD TYPE</th>
+                    <th className="border p-2">VALUE</th>
+                    <th className="border p-2 w-20 text-center">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {earningDetails.map((row, index) => (
+                    <tr key={index} className="even:bg-gray-50">
+                      <td className="border p-2 text-center">{index + 1}</td>
+
+                      {/* Head Name */}
+                     <td className="border p-2">
+                      <select
+                        value={row.headName}
+                        onChange={(e) => {
+                          const updated = [...earningDetails];
+                          updated[index].headName = e.target.value.toUpperCase();
+                          setEarningDetails(updated);
+                        }}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150 uppercase"
+                      >
+                        <option value="">SELECT</option>
+                        <option value="DA">DA</option>
+                        <option value="VDA">VDA</option>
+                        <option value="DA">DA</option>
+                        <option value="HRA">HRA</option>
+                        <option value="OTH ALW">OTH ALW</option>
+                        <option value="TIFF ALW">TIFF ALW</option>
+                        <option value="CONV">CONV</option>
+                        <option value="MEDICAL">MEDICAL</option>
+                        <option value="MISC ALW">MISC ALW</option>
+                        <option value="OVER TIME">OVER TIME</option>
+                        <option value="BONUS">BONUS</option>
+                        <option value="LEAVE ENC">LEAVE ENC</option>
+                        <option value="SAL ADJUSTMENT">SAL ADJUSTMENT</option>
+                        <option value="MOBILE ALLOWANCE">MOBILE ALLOWANCE</option>
+                        <option value="MANAGEMENT ALLOWANCE">MANAGEMENT ALLOWANCE</option>
+                      </select>
+                    </td>
+
+
+                      {/* Head Type */}
+                      <td className="border p-2">
+                        <select
+                          value={row.headType}
+                          onChange={(e) => {
+                            const updated = [...earningDetails];
+                            updated[index].headType = e.target.value.toUpperCase();
+                            setEarningDetails(updated);
+                          }}
+                          className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150 uppercase"
+                        >
+                          <option value="">SELECT</option>
+                          <option value="FIXED">FIXED</option>
+                          <option value="VARIABLE">VARIABLE</option>
+                        </select>
+                      </td>
+
+                      {/* Value */}
+                      <td className="border p-2">
+                        <input
+                          type="number"
+                          value={row.value}
+                          onChange={(e) => {
+                            const updated = [...earningDetails];
+                            updated[index].value = e.target.value;
+                            setEarningDetails(updated);
+                          }}
+                          className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+
+                      {/* Action Buttons */}
+                      <td className="border p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEarningDetails([
+                              ...earningDetails,
+                              { headName: "", headType: "", value: "" },
+                            ])
+                          }
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 rounded mr-1"
+                        >
+                          +
+                        </button>
+                        {earningDetails.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEarningDetails(earningDetails.filter((_, i) => i !== index))
+                            }
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 rounded"
+                          >
+                            -
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* ===== DEDUCTION TABLE ===== */}
+              <h4 className="text-lg font-semibold text-white mb-2 pl-2 bg-blue-700 rounded-sm">DEDUCTION</h4>
+              <table className="w-full border border-gray-300 mb-6 text-sm font-medium">
+                <thead className="bg-sky-100">
+                  <tr>
+                    <th className="border p-2 w-16">SL.NO.</th>
+                    <th className="border p-2">HEAD NAME</th>
+                    <th className="border p-2">HEAD TYPE</th>
+                    <th className="border p-2">VALUE</th>
+                    <th className="border p-2 w-20 text-center">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deductionDetails.map((row, index) => (
+                    <tr key={index} className="even:bg-gray-50">
+                      <td className="border p-2 text-center">{index + 1}</td>
+
+                     {/* Head Name */}
+                    <td className="border p-2">
+                      <select
+                        value={row.headName}
+                        onChange={(e) => {
+                          const updated = [...deductionDetails];
+                          updated[index].headName = e.target.value.toUpperCase();
+                          setDeductionDetails(updated);
+                        }}
+                        className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150 uppercase"
+                      >
+                        <option value="">SELECT</option>
+                        <option value="PF">PF</option>
+                        <option value="PROF TAX">PROF TAX</option>
+                        <option value="PF INT">PF INT</option>
+                        <option value="APF">APF</option>
+                        <option value="I TAX">I TAX</option>
+                        <option value="INSU PERM">INSU PERM</option>
+                        <option value="PF LOAN">PF LOAN</option>
+                        <option value="ESI">ESI</option>
+                        <option value="ADV">ADV</option>
+                        <option value="HRD">HRD</option>
+                        <option value="CO-OP">CO-OP</option>
+                        <option value="FURNITURE">FURNITURE</option>
+                        <option value="MISC DED">MISC DED</option>
+                        <option value="PF EMPLOYER CONTRIBUTION">PF EMPLOYER CONTRIBUTION</option>
+                        <option value="TDS">TDS</option>
+                      </select>
+                    </td>
+
+                      {/* Head Type */}
+                      <td className="border p-2">
+                        <select
+                          value={row.headType}
+                          onChange={(e) => {
+                            const updated = [...deductionDetails];
+                            updated[index].headType = e.target.value.toUpperCase();
+                            setDeductionDetails(updated);
+                          }}
+                          className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150 uppercase"
+                        >
+                          <option value="">SELECT</option>
+                          <option value="FIXED">FIXED</option>
+                          <option value="VARIABLE">VARIABLE</option>
+                        </select>
+                      </td>
+
+                      {/* Value */}
+                      <td className="border p-2">
+                        <input
+                          type="number"
+                          value={row.value}
+                          onChange={(e) => {
+                            const updated = [...deductionDetails];
+                            updated[index].value = e.target.value;
+                            setDeductionDetails(updated);
+                          }}
+                          className="w-full pl-2 pr-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
+                        />
+                      </td>
+
+                      {/* Action Buttons */}
+                      <td className="border p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDeductionDetails([
+                              ...deductionDetails,
+                              { headName: "", headType: "", value: "" },
+                            ])
+                          }
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 rounded mr-1"
+                        >
+                          +
+                        </button>
+                        {deductionDetails.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeductionDetails(deductionDetails.filter((_, i) => i !== index))
+                            }
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 rounded"
+                          >
+                            -
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* ===== NEXT/BACK BUTTONS ===== */}
+              <div className="flex justify-between mt-6">
+               <button
+                    onClick={() => setStep(4)}
+                    className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800"
+                  >
+                    ← Back
+                  </button>
+                 <form onSubmit={handleSubmit}>
+                  {/* your full form fields here */}
+                  <button
+                    type="submit"
+                    className="bg-green-600 hover:bg-green-700 text-white py-1 px-4 rounded"
+                  >
+                    Submit
+                  </button>
+                </form>
+
+              </div>
+              </div>
+              )}
+             
+        </div>
       </div>
     </div>
+    
   );
 };
+
+// Input
+const Input = ({ label, value, onChange, type = "text", readOnly = false }) => (
+  <div>
+    <label className="block text-sm">{label}</label>
+    <input
+      type={type}
+      value={value}
+      readOnly={readOnly}
+      onChange={(e) =>
+        onChange &&
+        onChange(type === "text" ? e.target.value.toUpperCase() : e.target.value)
+      }
+      className={`w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150 ${
+        readOnly ? "bg-gray-100 cursor-not-allowed" : ""
+      }`}
+    />
+  </div>
+);
+
+// Select
+const Select = ({ label, value, onChange, options }) => (
+  <div>
+    <label className="block text-sm">{label}</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
+    >
+      <option value="">-- Select --</option>
+      {options.map((opt, i) => (
+        <option key={i} value={typeof opt === "object" ? opt.value : opt}>
+          {typeof opt === "object" ? opt.label : opt}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
 
 export default EmployeeMaster;

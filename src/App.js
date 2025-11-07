@@ -26,11 +26,13 @@ import AdminLogin from "./component/AdminLogin";
 import EditProfile from "./component/EditProfile";
 import ChangePassword from "./component/ChangePassword";
 import AdminManagement from "./component/AdminManagement";
+import { Toaster } from "react-hot-toast";
 
 
 
 export default function App(){
   return (
+    <>
     <Routes>
       <Route path="/Homepage" element={<HomePage/>} />
       <Route path="/BackButton" element={<BackButton/>} />
@@ -58,8 +60,21 @@ export default function App(){
       <Route path="/EditProfile" element={<EditProfile/>} />
       <Route path="/ChangePassword" element={<ChangePassword/>} />
       <Route path="/AdminManagement" element={<AdminManagement/>} />
- 
-
-    </Routes>
+     </Routes>
+        <Toaster
+          reverseOrder={false}
+          toastOptions={{
+            style: { fontWeight: 600 },
+            success: {
+              icon: "✅",
+              style: { background: "#d1fae5", color: "#065f46" }, // green background
+            },
+            error: {
+              icon: "❌",
+              style: { background: "#fee2e2", color: "#991b1b" }, // red background
+            },
+          }}
+        />
+</>
   );
 }

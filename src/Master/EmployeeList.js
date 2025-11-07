@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import BackButton from "../component/BackButton";
 import Sidebar from '../component/Sidebar';
+import toast from "react-hot-toast";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -66,6 +67,7 @@ const EmployeeList = () => {
     try {
       await axios.delete(`http://localhost:5001/api/employees/${id}`);
       setEmployees((prev) => prev.filter((e) => e._id !== id));
+      toast.success("Employee Deleted successfully");
     } catch (e) {
       console.error(e);
     }

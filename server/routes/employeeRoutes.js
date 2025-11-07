@@ -1,19 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const {
-  getNextEmployeeID,
-  createEmployee,
-  getAllEmployees,
-  getManagers,
-  updateEmployee,
-  deleteEmployee,
-} = require("../controllers/employeeController");
+const employeeController = require("../controllers/employeeController");
 
-router.get("/next-id", getNextEmployeeID);
-router.get("/managers", getManagers);
-router.post("/", createEmployee);
-router.get("/", getAllEmployees);
-router.put("/:id", updateEmployee);
-router.delete("/:id", deleteEmployee);
+//  Each route must pass a *function*, not an object
+router.get("/next-id", employeeController.getNextEmployeeID);
+router.post("/", employeeController.createEmployee);
+router.get("/", employeeController.getAllEmployees);
+router.get("/managers", employeeController.getManagers);
+router.put("/:id", employeeController.updateEmployee);
+router.delete("/:id", employeeController.deleteEmployee);
 
 module.exports = router;
