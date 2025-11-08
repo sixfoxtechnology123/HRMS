@@ -28,6 +28,8 @@ import EditProfile from "./component/EditProfile";
 import ChangePassword from "./component/ChangePassword";
 import AdminManagement from "./component/AdminManagement";
 import { Toaster } from "react-hot-toast";
+import LeaveRuleMaster from "./Master/LeaveRuleMaster";
+import LeaveRuleList from "./Master/LeaveRuleList";
 
 export default function App(){
   return (
@@ -60,6 +62,8 @@ export default function App(){
       <Route path="/ChangePassword" element={<ChangePassword/>} />
       <Route path="/AdminManagement" element={<AdminManagement/>} />
       <Route path="/LeaveDashboard" element={<LeaveDashboard/>} />
+      <Route path="/LeaveRuleMaster" element={<LeaveRuleMaster/>} />
+      <Route path="/LeaveRuleList" element={<LeaveRuleList/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

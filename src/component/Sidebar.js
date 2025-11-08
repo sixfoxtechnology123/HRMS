@@ -31,7 +31,20 @@ const Sidebar = () => {
     const admin = JSON.parse(localStorage.getItem("adminData")) || {};
     setPermissions(admin.permissions || []);
     setRole(admin.role || "");
-  }, []);
+
+    // Initialize openMenu if current path is inside a submenu
+    const leaveMenuPaths = [
+      "/LeaveDashboard",
+      "/LeaveTypeList",
+      "/LeaveRule",
+      "/LeaveAllocation",
+      "/LeaveBalance",
+      "/LeaveReport",
+    ];
+    if (leaveMenuPaths.includes(location.pathname)) {
+      setOpenMenu("Leave Management");
+    }
+  }, [location.pathname]);
 
   const menus = [
     { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard, permission: "Dashboard_View" },
@@ -45,7 +58,7 @@ const Sidebar = () => {
       submenus: [
         { name: "Dashboard", path: "/LeaveDashboard" },
         { name: "Manage Leave Type", path: "/LeaveTypeList" },
-        { name: "Leave Rule", path: "/LeaveRule" },
+        { name: "Leave Rule", path: "/LeaveRuleList" },
         { name: "Leave Allocation", path: "/LeaveAllocation" },
         { name: "Leave Balance", path: "/LeaveBalance" },
         { name: "Leave Report", path: "/LeaveReport" },
@@ -65,9 +78,9 @@ const Sidebar = () => {
     navigate("/");
   };
 
-  const handleMenuClick = (menu, index) => {
+  const handleMenuClick = (menu) => {
     if (menu.submenus) {
-      setOpenMenu(openMenu === index ? null : index);
+      setOpenMenu(openMenu === menu.name ? null : menu.name);
     } else {
       navigate(menu.path);
       setMobileOpen(false);
@@ -114,12 +127,12 @@ const Sidebar = () => {
               .map((menu, i) => {
                 const Icon = menu.icon;
                 const active = isMenuActive(menu);
-                const open = openMenu === i;
+                const open = openMenu === menu.name;
 
                 return (
                   <li key={i}>
                     <button
-                      onClick={() => handleMenuClick(menu, i)}
+                      onClick={() => handleMenuClick(menu)}
                       className={`flex items-center gap-3 p-1 w-full text-left rounded transition-colors ${
                         active ? "bg-blue-600 text-white" : "hover:bg-gray-700"
                       }`}
@@ -139,7 +152,7 @@ const Sidebar = () => {
                                   isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
                                 }`
                               }
-                              onClick={() => setMobileOpen(false)}
+                              onClick={() => setMobileOpen(false)} // Only close mobile, do not touch openMenu
                             >
                               {isOpen && sub.name}
                             </NavLink>
