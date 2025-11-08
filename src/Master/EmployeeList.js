@@ -134,12 +134,13 @@ const EmployeeList = () => {
                 <td className="border border-green-500 px-2 py-1">{e.status}</td> */}
                 <td className="border border-green-500 px-2 py-1">
                   <div className="flex justify-center gap-8">
-                    <button
-                      onClick={() => navigate("/employeeMaster", { state: { employee: e } })}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <FaEdit />
-                    </button>
+                   <button
+                    onClick={() => navigate("/EmployeeMaster", { state: { employee: e, id: e._id } })}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <FaEdit />
+                  </button>
+
                     <button
                       onClick={() => deleteEmployee(e._id)}
                       className="text-red-600 hover:text-red-800"

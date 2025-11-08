@@ -142,3 +142,17 @@ exports.deleteEmployee = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// GET /api/employees/:id
+exports.getEmployeeById = async (req, res) => {
+  try {
+    const emp = await Employee.findById(req.params.id)
+      .populate("departmentID", "deptName")   // populate department
+      .populate("designationID", "designationName"); // populate designation
+
+    if (!emp) return res.status(404).json({ message: "Employee not found" });
+    res.json(emp);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

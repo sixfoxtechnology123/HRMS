@@ -4,9 +4,12 @@ import Sidebar from "../component/Sidebar";
 import BackButton from "../component/BackButton";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 
 
 const EmployeeMaster = () => {
+  const location = useLocation();
+const { employee, id } = location.state || {};
   const [step, setStep] = useState(1);
   const [employeeID, setEmployeeID] = useState("");
   const [salutation, setSalutation] = useState("");
@@ -115,6 +118,94 @@ const [deductionDetails, setDeductionDetails] = useState([
 
 const navigate = useNavigate();
 
+// put near top of component (after state defs)
+useEffect(() => {
+  if (!employee) {
+    axios
+      .get("http://localhost:5001/api/employees/next-id")
+      .then((res) => {
+        // backend returns { employeeID: "EMP5" }
+        setEmployeeID(res.data.employeeID || "");
+      })
+      .catch((err) => console.error("Error fetching next ID:", err));
+  }
+}, [employee]);
+
+useEffect(() => {
+  if (employee) {
+    // keep same employee ID during edit
+    setEmployeeID(employee.employeeID || "");
+  } else {
+    // only generate new ID when adding new employee
+    fetchNextEmployeeID();
+  }
+
+  if (employee) {
+    setSalutation(employee.salutation || "");
+    setFirstName(employee.firstName || "");
+    setMiddleName(employee.middleName || "");
+    setLastName(employee.lastName || "");
+    setFatherName(employee.fatherName || "");
+    setSpouseName(employee.spouseName || "");
+    setCaste(employee.caste || "");
+    setSubCaste(employee.subCaste || "");
+    setReligion(employee.religion || "");
+    setMaritalStatus(employee.maritalStatus || "");
+
+    setDepartmentName(
+      employee.departmentName
+        ? { value: employee.departmentID, label: employee.departmentName }
+        : null
+    );
+
+    setDesignationName(
+      employee.designationName
+        ? { value: employee.designationID, label: employee.designationName }
+        : null
+    );
+
+    setDob(employee.dob || "");
+    setDor(employee.dor || "");
+    setDoj(employee.doj || "");
+    setConfirmationDate(employee.confirmationDate || "");
+    setNextIncrementDate(employee.nextIncrementDate || "");
+    setEligiblePromotion(employee.eligiblePromotion || "");
+    setEmploymentType(employee.employmentType || "");
+    setProfileImage(employee.profileImage || null);
+    setReportingAuthority(employee.reportingAuthority || "");
+    setLeaveAuthority(employee.leaveAuthority || "");
+    setEducationDetails(employee.educationDetails || []);
+    setNomineeDetails(employee.nominees || []);
+    setBloodGroup(employee.medical?.bloodGroup || "");
+    setEyeSightLeft(employee.medical?.eyeSightLeft || "");
+    setEyeSightRight(employee.medical?.eyeSightRight || "");
+    setFamilyPlanStatus(employee.medical?.familyPlanStatus || "");
+    setFamilyPlanDate(employee.medical?.familyPlanDate || "");
+    setHeight(employee.medical?.height || "");
+    setWeight(employee.medical?.weight || "");
+    setIdentificationMark1(employee.medical?.identification1 || "");
+    setIdentificationMark2(employee.medical?.identification2 || "");
+    setPhysicallyChallenged(employee.medical?.physicallyChallenged || "");
+    setPermanentAddress(employee.permanentAddress || {});
+    setPresentAddress(employee.presentAddress || {});
+    setBasicPay(employee.payDetails?.basicPay || "");
+    setPfType(employee.payDetails?.pfType || "");
+    setPassportNo(employee.payDetails?.passportNo || "");
+    setPfNo(employee.payDetails?.pfNo || "");
+    setUanNo(employee.payDetails?.uanNo || "");
+    setPanNo(employee.payDetails?.panNo || "");
+    setBankName(employee.payDetails?.bankName || "");
+    setBranch(employee.payDetails?.branch || "");
+    setIfscCode(employee.payDetails?.ifscCode || "");
+    setAccountNo(employee.payDetails?.accountNo || "");
+    setPayLevel(employee.payDetails?.payLevel || "");
+    setAadhaarNo(employee.payDetails?.aadhaarNo || "");
+    setEarningDetails(employee.earnings || []);
+    setDeductionDetails(employee.deductions || []);
+  }
+}, [employee]);
+
+
 
   const handleDobChange = (val) => {
     setDob(val);
@@ -131,14 +222,15 @@ const navigate = useNavigate();
     fetchEmployees();
   }, []);
 
-  const fetchNextEmployeeID = async () => {
-    try {
-      const res = await axios.get("http://localhost:5001/api/employees/next-id");
-      setEmployeeID(res.data.employeeID);
-    } catch (err) {
-      console.error("Error fetching next employee ID:", err);
-    }
-  };
+const fetchNextEmployeeID = async () => {
+  try {
+    const res = await axios.get("http://localhost:5001/api/employees/next-id");
+    setEmployeeID(res.data.nextEmployeeID);
+  } catch (err) {
+    console.error("Failed to get next employee ID", err);
+  }
+};
+
 
   const loadMasters = async () => {
     try {
@@ -210,7 +302,11 @@ setDesignations(
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-
+const getValue = (obj) => {
+  if (!obj) return "";
+  if (typeof obj === "object") return obj.value || obj._id || "";
+  return obj;
+};
 const payload = {
   employeeID,
   salutation,
@@ -223,14 +319,10 @@ const payload = {
   subCaste,
   religion,
   maritalStatus,
- departmentID:
-    typeof departmentName === "object"
-      ? departmentName.value || departmentName._id
-      : departmentName,
-  designationID:
-    typeof designationName === "object"
-      ? designationName.value || designationName._id
-      : designationName,
+
+
+departmentID: getValue(departmentName),
+designationID: getValue(designationName),
 
 
   dob,
@@ -278,19 +370,30 @@ const payload = {
 };
 
   try {
-   const res = await axios.post("http://localhost:5001/api/employees", payload);
-
-    console.log("Employee saved", res.data);
-    toast.success("Employee saved successfully!");
-    navigate("/EmployeeList"); 
+    if (employee?._id) {
+      const res = await axios.put(
+        `http://localhost:5001/api/employees/${employee._id}`,
+        payload
+      );
+      toast.success("Employee updated successfully!");
+    } else {
+      const res = await axios.post(
+        "http://localhost:5001/api/employees",
+        payload
+      );
+      toast.success("Employee saved successfully!");
+    }
+    navigate("/EmployeeList");
   } catch (err) {
-    console.error("Failed to save employee:", err.response?.data || err.message);
-    toast.error("Failed to save employee: " + (err.response?.data?.message || err.message));
+    console.error(
+      "Failed to save employee:",
+      err.response?.data || err.message
+    );
+    toast.error(
+      "Failed to save employee: " + (err.response?.data?.message || err.message)
+    );
   }
 };
-
-
-
 
   return (
     <div className="min-h-screen bg-zinc-300 flex">
@@ -1563,12 +1666,16 @@ const payload = {
                   </button>
                  <form onSubmit={handleSubmit}>
                   {/* your full form fields here */}
-                  <button
+                 <button
                     type="submit"
-                    className="bg-green-600 hover:bg-green-700 text-white py-1 px-4 rounded"
+                    className={`flex items-center gap-1 px-3 py-1 rounded text-white ${
+                      location.state?.employee ? "bg-yellow-500 hover:bg-yellow-600" : "bg-green-600 hover:bg-green-700"
+                    }`}
                   >
-                    Submit
+                    <span>{location.state?.employee ? "Update" : "Submit"}</span>
+                    <span>→</span>
                   </button>
+
                 </form>
 
               </div>
