@@ -18,9 +18,10 @@ const EmployeeMaster = () => {
   const [caste, setCaste] = useState("");
   const [subCaste, setSubCaste] = useState("");
   const [religion, setReligion] = useState("");
-  const [maritalStatus, setMaritalStatus] = useState("No");
-  const [departmentName, setDepartmentName] = useState("");
-  const [designationName, setDesignationName] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [departmentName, setDepartmentName] = useState(null);
+  const [designationName, setDesignationName] = useState(null);
+
   const [dob, setDob] = useState("");
   const [dor, setDor] = useState("");
   const [doj, setDoj] = useState("");
@@ -146,15 +147,13 @@ const navigate = useNavigate();
         axios.get("http://localhost:5001/api/designations"),
       ]);
 
-      setDepartments(
-        (deptRes.data || []).map((d) => ({ value: d._id, label: d.deptName }))
-      );
-      setDesignations(
-        (desigRes.data || []).map((d) => ({
-          value: d._id,
-          label: d.designationName,
-        }))
-      );
+   setDepartments(
+  (deptRes.data || []).map((d) => ({ value: d._id, label: d.deptName, _id: d._id }))
+);
+setDesignations(
+  (desigRes.data || []).map((d) => ({ value: d._id, label: d.designationName, _id: d._id }))
+);
+
     } catch (err) {
       console.error("Error fetching master data:", err);
     }
@@ -224,8 +223,16 @@ const payload = {
   subCaste,
   religion,
   maritalStatus,
-  departmentName: departmentName || null,  
-  designationName: designationName || null,
+ departmentID:
+    typeof departmentName === "object"
+      ? departmentName.value || departmentName._id
+      : departmentName,
+  designationID:
+    typeof designationName === "object"
+      ? designationName.value || designationName._id
+      : designationName,
+
+
   dob,
   dor,
   doj,
@@ -434,7 +441,7 @@ const payload = {
                     "CONTRACT",
                   ]}
                 />
-                <div>
+                {/* <div>
                   <label className="block text-sm">Profile Image</label>
                   <input
                     type="file"
@@ -442,7 +449,7 @@ const payload = {
                     onChange={handleFileChange}
                     className="w-full text-sm border border-gray-300 rounded p-1"
                   />
-                </div>
+                </div> */}
                <Select
                   label="Reporting Authority"
                   value={reportingAuthority}

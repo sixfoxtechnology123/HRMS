@@ -98,7 +98,10 @@ const EmployeeSchema = new mongoose.Schema(
     eligiblePromotion: { type: String, default: "" },
     employmentType: { type: String, default: "" },
 
-    profileImage: { type: String, default: "" },
+     profileImage: {
+    data: Buffer,
+    contentType: String
+  },
 
     reportingAuthority: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null },
     leaveAuthority: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null },

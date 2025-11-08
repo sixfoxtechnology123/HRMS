@@ -125,7 +125,7 @@ const EmployeeList = () => {
                 </td> */}
 
                 <td className="border border-green-500 px-2 py-1">
-                  {desigMap[e.designationID] || e.designationID}
+                  {e.designationName}
                 </td>
                 <td className="border border-green-500 px-2 py-1">{e.permanentAddress.mobile}</td>
                 {/* <td className="border border-green-500 px-2 py-1">{e.employmentType}</td>
