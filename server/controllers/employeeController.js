@@ -146,13 +146,51 @@ exports.deleteEmployee = async (req, res) => {
 exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await Employee.findById(req.params.id)
-      .populate("departmentID", "deptName")   // populate department
-      .populate("designationID", "designationName"); // populate designation
+      .populate("departmentID", "deptName")
+      .populate("designationID", "designationName");
 
     if (!emp) return res.status(404).json({ message: "Employee not found" });
-    res.json(emp);
+
+    // Find reporting authority by full name
+    let reportingAuthorityId = null;
+    if (emp.reportingAuthority) {
+      const rep = await Employee.findOne({
+        $expr: {
+          $regexMatch: {
+            input: { $concat: ["$firstName", " ", "$middleName", " ", "$lastName"] },
+            regex: emp.reportingAuthority,
+            options: "i",
+          },
+        },
+      });
+      if (rep) reportingAuthorityId = rep._id;
+    }
+
+    // Find leave authority by full name
+    let leaveAuthorityId = null;
+    if (emp.leaveAuthority) {
+      const lev = await Employee.findOne({
+        $expr: {
+          $regexMatch: {
+            input: { $concat: ["$firstName", " ", "$middleName", " ", "$lastName"] },
+            regex: emp.leaveAuthority,
+            options: "i",
+          },
+        },
+      });
+      if (lev) leaveAuthorityId = lev._id;
+    }
+
+    res.json({
+      ...emp.toObject(),
+      departmentID: emp.departmentID?._id || null,
+      designationID: emp.designationID?._id || null,
+      reportingAuthorityId,
+      leaveAuthorityId,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 

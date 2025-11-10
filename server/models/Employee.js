@@ -103,8 +103,9 @@ const EmployeeSchema = new mongoose.Schema(
     contentType: String
   },
 
-    reportingAuthority: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null },
-    leaveAuthority: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null },
+    reportingAuthority: { type: String, default: "" },
+    leaveAuthority: { type: String, default: "" },
+
 
     educationDetails: { type: [EducationSchema], default: [] },
     nominees: { type: [NomineeSchema], default: [] },

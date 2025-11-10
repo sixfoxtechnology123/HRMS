@@ -175,7 +175,16 @@ useEffect(() => {
     setReportingAuthority(employee.reportingAuthority || "");
     setLeaveAuthority(employee.leaveAuthority || "");
     setEducationDetails(employee.educationDetails || []);
-    setNomineeDetails(employee.nominees || []);
+    setNomineeDetails(
+      (employee.nominees || []).map((n) => ({
+        name: n.name || "",
+        relation: n.relationship || "", // map backend field
+        share: n.share || "",
+        age: n.age || "",
+        address: n.address || "",
+         dob: n.dob || "", 
+      }))
+    );
     setBloodGroup(employee.medical?.bloodGroup || "");
     setEyeSightLeft(employee.medical?.eyeSightLeft || "");
     setEyeSightRight(employee.medical?.eyeSightRight || "");
@@ -307,6 +316,13 @@ const getValue = (obj) => {
   if (typeof obj === "object") return obj.value || obj._id || "";
   return obj;
 };
+
+const getEmployeeName = (id) => {
+  const emp = employees.find(e => e._id === id);
+  if (!emp) return "";
+  return [emp.firstName, emp.middleName, emp.lastName].filter(Boolean).join(" ");
+};
+
 const payload = {
   employeeID,
   salutation,
@@ -333,10 +349,17 @@ designationID: getValue(designationName),
   eligiblePromotion,
   employmentType,
   profileImage,
-  reportingAuthority: reportingAuthority || null,
-  leaveAuthority: leaveAuthority || null,
+reportingAuthority: getEmployeeName(reportingAuthority),
+leaveAuthority: getEmployeeName(leaveAuthority),
   educationDetails,
-  nominees: nomineeDetails,
+  nominees: nomineeDetails.map(n => ({
+  name: n.name,
+  relationship: n.relation, // map frontend 'relation' to backend 'relationship'
+  dob: n.dob,
+  share: n.share,
+  address: n.address
+})),
+
   medical: {
     bloodGroup,
     eyeSightLeft,
@@ -1040,7 +1063,7 @@ designationID: getValue(designationName),
 
                   {/* Village */}
                   <div>
-                    <label className="block text-sm mb-1">Village</label>
+                    <label className="block text-sm mb-1">Village/Town</label>
                     <input
                       type="text"
                       value={permanentAddress.village || ""}
@@ -1157,14 +1180,47 @@ designationID: getValue(designationName),
                                 focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-150"
                     >
                       <option value="">Select</option>
-                      <option value="MAHARASHTRA">Maharashtra</option>
+                     <option value="ANDHRA PRADESH">Andhra Pradesh</option>
+                      <option value="ARUNACHAL PRADESH">Arunachal Pradesh</option>
+                      <option value="ASSAM">Assam</option>
+                      <option value="BIHAR">Bihar</option>
+                      <option value="CHHATTISGARH">Chhattisgarh</option>
+                      <option value="GOA">Goa</option>
                       <option value="GUJARAT">Gujarat</option>
+                      <option value="HARYANA">Haryana</option>
+                      <option value="HIMACHAL PRADESH">Himachal Pradesh</option>
+                      <option value="JHARKHAND">Jharkhand</option>
                       <option value="KARNATAKA">Karnataka</option>
+                      <option value="KERALA">Kerala</option>
+                      <option value="MADHYA PRADESH">Madhya Pradesh</option>
+                      <option value="MAHARASHTRA">Maharashtra</option>
+                      <option value="MANIPUR">Manipur</option>
+                      <option value="MEGHALAYA">Meghalaya</option>
+                      <option value="MIZORAM">Mizoram</option>
+                      <option value="NAGALAND">Nagaland</option>
+                      <option value="ODISHA">Odisha</option>
+                      <option value="PUNJAB">Punjab</option>
+                      <option value="RAJASTHAN">Rajasthan</option>
+                      <option value="SIKKIM">Sikkim</option>
                       <option value="TAMIL NADU">Tamil Nadu</option>
-                      <option value="DELHI">Delhi</option>
+                      <option value="TELANGANA">Telangana</option>
+                      <option value="TRIPURA">Tripura</option>
                       <option value="UTTAR PRADESH">Uttar Pradesh</option>
+                      <option value="UTTARAKHAND">Uttarakhand</option>
                       <option value="WEST BENGAL">West Bengal</option>
+
+                      
+                      <option value="ANDAMAN AND NICOBAR">Andaman and Nicobar Islands</option>
+                      <option value="CHANDIGARH">Chandigarh</option>
+                      <option value="DADRA AND NAGAR HAVELI AND DAMAN AND DIU">Dadra and Nagar Haveli and Daman & Diu</option>
+                      <option value="DELHI">Delhi</option>
+                      <option value="JAMMU AND KASHMIR">Jammu & Kashmir</option>
+                      <option value="LADAKH">Ladakh</option>
+                      <option value="LAKSHADWEEP">Lakshadweep</option>
+                      <option value="PUDUCHERRY">Puducherry</option>
+
                       <option value="OTHER">Other</option>
+
                     </select>
                   </div>
 

@@ -33,6 +33,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const adminManagementRoutes = require("./routes/adminManagementRoutes");
+const leaveRuleRoutes = require("./routes/leaveRule");
 
 app.use("/api/master", masterRoutes);
 app.use("/api/departments", departmentRoutes);
@@ -48,6 +49,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard/activities", activityRoutes);
 app.use("/api/adminManagement", adminManagementRoutes);
+app.use("/api/leaverule", leaveRuleRoutes);
 
 // ----------------- Create Default Admin -----------------
 const createDefaultAdmin = async () => {
