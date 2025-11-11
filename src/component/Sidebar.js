@@ -59,7 +59,7 @@ const Sidebar = () => {
         { name: "Dashboard", path: "/LeaveDashboard" },
         { name: "Manage Leave Type", path: "/LeaveTypeList" },
         { name: "Leave Rule", path: "/LeaveRuleList" },
-        { name: "Leave Allocation", path: "/LeaveAllocation" },
+        { name: "Leave Allocation", path: "/LeaveAllocationList" },
         { name: "Leave Balance", path: "/LeaveBalance" },
         { name: "Leave Report", path: "/LeaveReport" },
       ],

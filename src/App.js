@@ -30,6 +30,8 @@ import AdminManagement from "./component/AdminManagement";
 import { Toaster } from "react-hot-toast";
 import LeaveRuleMaster from "./Master/LeaveRuleMaster";
 import LeaveRuleList from "./Master/LeaveRuleList";
+import LeaveAllocationForm from "./Master/LeaveAllocationForm";
+import LeaveAllocationList from "./Master/LeaveAllocationList";
 
 export default function App(){
   return (
@@ -64,6 +66,8 @@ export default function App(){
       <Route path="/LeaveDashboard" element={<LeaveDashboard/>} />
       <Route path="/LeaveRuleMaster" element={<LeaveRuleMaster/>} />
       <Route path="/LeaveRuleList" element={<LeaveRuleList/>} />
+      <Route path="/LeaveAllocationForm" element={<LeaveAllocationForm/>} />
+      <Route path="/LeaveAllocationList" element={<LeaveAllocationList/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

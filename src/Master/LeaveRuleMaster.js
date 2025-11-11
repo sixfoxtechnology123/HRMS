@@ -106,7 +106,7 @@ const LeaveRuleMaster = () => {
                 name="maximumNo"
                 value={formData.maximumNo}
                 onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm"
+                 className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
               />
             </div>
 
@@ -118,7 +118,7 @@ const LeaveRuleMaster = () => {
                 name="entitledFromMonth"
                 value={formData.entitledFromMonth}
                 onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm"
+                 className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
               >
                 <option value="">Select</option>
                 {[
@@ -139,7 +139,7 @@ const LeaveRuleMaster = () => {
                 name="maximumBalance"
                 value={formData.maximumBalance}
                 onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm"
+                 className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
               />
             </div>
 
@@ -152,7 +152,7 @@ const LeaveRuleMaster = () => {
                 name="effectiveFrom"
                 value={formData.effectiveFrom}
                 onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm"
+                 className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
               />
             </div>
 
@@ -165,7 +165,7 @@ const LeaveRuleMaster = () => {
                 name="effectiveTo"
                 value={formData.effectiveTo}
                 onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm"
+                 className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
               />
             </div>
 
