@@ -36,6 +36,7 @@ import EmployeeDashboard from "./EmployeeCorner/EmployeeDashboard";
 import UserProfile from "./EmployeeCorner/UserProfile";
 import EmployeeHome from "./EmployeeCorner/EmployeeHome";
 import EmployeeCornerSidebar from "./EmployeeCorner/EmployeeCornerSidebar";
+import EmployeeUserIdCreated from "./EmployeeCorner/EmployeeUserIdCreated";
 
 export default function App(){
   return (
@@ -76,6 +77,7 @@ export default function App(){
       <Route path="/UserProfile" element={<UserProfile/>} />
       <Route path="/EmployeeHome" element={<EmployeeHome/>} />
       <Route path="/EmployeeCornerSidebar" element={<EmployeeCornerSidebar/>} />
+      <Route path="/EmployeeUserIdCreated" element={<EmployeeUserIdCreated/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

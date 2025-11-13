@@ -23,58 +23,79 @@ const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [role, setRole] = useState("");
-  const [openMenu, setOpenMenu] = useState(null);
+  // **MODIFIED:** Use an array to track multiple open menus (for nested visibility)
+  const [openMenus, setOpenMenus] = useState([]); 
   const navigate = useNavigate();
   const location = useLocation();
-
-
 
   const menus = [
     { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard, permission: "Dashboard_View" },
     { name: "New Employee Reg", path: "/EmployeeList", icon: Users, permission: "Employee_View" },
-    { name: "Employee Corner", path: "/EmployeeDashboard", icon: Users, permission: "Employee_View" },
-    { name: "Departments", path: "/DepartmentList", icon: Building2, permission: "Department_View" },
-    { name: "Designations", path: "/DesignationList", icon: Briefcase, permission: "Designation_View" },
     {
-      name: "Leave Management",
-      icon: Calendar,
-      permission: "Leave_Manage",
+      name: "Master",
+      icon: Building2,
+      permission: "Master_View",
       submenus: [
-        { name: "Dashboard", path: "/LeaveDashboard" },
-        { name: "Manage Leave Type", path: "/LeaveTypeList" },
-        { name: "Leave Rule", path: "/LeaveRuleList" },
-        { name: "Leave Allocation", path: "/LeaveAllocationList" },
-        // { name: "Leave Balance", path: "" },
-        // { name: "Leave Report", path: "" },
+        { name: "Departments", path: "/DepartmentList" },
+        { name: "Designations", path: "/DesignationList" },
+        {
+          name: "Leave Management",
+          submenus: [
+            { name: "Dashboard", path: "/LeaveDashboard" },
+            { name: "Manage Leave Type", path: "/LeaveTypeList" },
+            { name: "Leave Rule", path: "/LeaveRuleList" },
+            { name: "Leave Allocation", path: "/LeaveAllocationList" },
+          ],
+        },
+        { name: "Holidays", path: "/HolidayList" },
+        { name: "Shifts", path: "/ShiftList" },
+        { name: "Policies", path: "/PolicyList" },
+        { name: "Locations", path: "/LocationList" },
+        { name: "Payroll", path: "/PayrollComponentList" },
       ],
     },
-    { name: "Holidays", path: "/HolidayList", icon: CalendarDays, permission: "Holiday_Manage" },
-    { name: "Shifts", path: "/ShiftList", icon: Clock, permission: "Shift_Manage" },
-    { name: "Policies", path: "/PolicyList", icon: FileText, permission: "Policy_Manage" },
-    { name: "Locations", path: "/LocationList", icon: MapPin, permission: "Location_Manage" },
-    { name: "Payroll", path: "/PayrollComponentList", icon: Wallet, permission: "Payroll_Manage" },
-    { name: "Admin Management", path: "/AdminManagement", icon: Users, permission: "Admin_Management" },
+    {
+      name: "Admin Panel",
+      icon: Users,
+      permission: "Admin_Management",
+      submenus: [
+        { name: "Admin Management", path: "/AdminManagement" },
+        { name: "Employee Management", path: "/EmployeeUserIdCreated" },
+      ],
+    },
   ];
-useEffect(() => {
-  const admin = JSON.parse(localStorage.getItem("adminData")) || {};
-  setPermissions(admin.permissions || []);
-  setRole(admin.role || []);
 
-  const leaveMenuPaths = [
-    "/LeaveDashboard",
-    "/LeaveTypeList",
-    "/LeaveRuleList",
-    "/LeaveAllocationList",
-    "/LeaveRuleMaster",
-    "/LeaveTypeMaster",
-    "/LeaveAllocationForm",
- 
-  ];
-  if (leaveMenuPaths.includes(location.pathname)) {
-    setOpenMenu("Leave Management");
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+  // Helper function to find all parent menu names for a given path
+  const findParentMenus = (path, menusList, currentParents = []) => {
+    for (const menu of menusList) {
+      const newParents = [...currentParents, menu.name];
+      if (menu.path === path) {
+        // Return all parent names for a direct match
+        return newParents;
+      }
+      if (menu.submenus) {
+        // Recurse into submenus
+        const result = findParentMenus(path, menu.submenus, newParents);
+        if (result.length > 0) {
+          // If a match is found in nested submenus, return the path
+          return result;
+        }
+      }
+    }
+    return [];
+  };
+
+  // useEffect to open parent menus based on the current URL
+  useEffect(() => {
+    const admin = JSON.parse(localStorage.getItem("adminData")) || {};
+    setPermissions(admin.permissions || []);
+    setRole(admin.role || "");
+
+    const activeParents = findParentMenus(location.pathname, menus);
+    // Set all parent menus to be open
+    setOpenMenus(activeParents); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("adminData");
@@ -82,26 +103,76 @@ useEffect(() => {
     navigate("/");
   };
 
+  // **MODIFIED:** Toggles the menu's name in the openMenus array
   const handleMenuClick = (menu) => {
     if (menu.submenus) {
-      setOpenMenu(openMenu === menu.name ? null : menu.name);
+      setOpenMenus(prevOpenMenus => {
+        if (prevOpenMenus.includes(menu.name)) {
+          // Close: Remove the menu name from the array
+          return prevOpenMenus.filter(name => name !== menu.name);
+        } else {
+          // Open: Add the menu name to the array
+          return [...prevOpenMenus, menu.name];
+        }
+      });
     } else {
       navigate(menu.path);
       setMobileOpen(false);
     }
   };
 
-const isMenuActive = (menu) => {
-  // Active when the current path matches the menu path or any submenu path
-  if (menu.path && location.pathname === menu.path) return true;
-  if (menu.submenus) {
-    return menu.submenus.some(
-      (sub) => sub.path && location.pathname.startsWith(sub.path)
-    );
-  }
-  return false;
-};
+  const isMenuActive = (menu) => {
+    if (menu.path && location.pathname === menu.path) return true;
+    if (menu.submenus) {
+      return menu.submenus.some(sub =>
+        sub.submenus
+          ? sub.submenus.some(ss => ss.path && location.pathname.startsWith(ss.path))
+          : sub.path && location.pathname.startsWith(sub.path)
+      );
+    }
+    return false;
+  };
 
+  // **MODIFIED:** Check if a menu is open by checking if its name is in openMenus
+  const isMenuOpen = (menuName) => openMenus.includes(menuName);
+
+  const renderSubmenus = (submenus) => (
+    <ul className="pl-8 space-y-1 mt-1">
+      {submenus.map((sub, j) => (
+        <li key={j}>
+          {sub.submenus ? (
+            <>
+              <button
+                // **MODIFIED:** Toggles the submenu name in the openMenus array
+                onClick={() => setOpenMenus(prevOpenMenus => {
+                  if (prevOpenMenus.includes(sub.name)) {
+                    return prevOpenMenus.filter(name => name !== sub.name);
+                  } else {
+                    return [...prevOpenMenus, sub.name];
+                  }
+                })}
+                className="flex items-center gap-3 p-1 w-full text-left rounded hover:bg-gray-700"
+              >
+                {sub.name}
+              </button>
+              {/* **MODIFIED:** Check if the submenu is open using isMenuOpen */}
+              {isMenuOpen(sub.name) && renderSubmenus(sub.submenus)}
+            </>
+          ) : (
+            <NavLink
+              to={sub.path}
+              className={({ isActive }) =>
+                `block p-1 rounded text-sm ${isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"}`
+              }
+              onClick={() => setMobileOpen(false)}
+            >
+              {sub.name}
+            </NavLink>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <>
@@ -135,7 +206,8 @@ const isMenuActive = (menu) => {
               .map((menu, i) => {
                 const Icon = menu.icon;
                 const active = isMenuActive(menu);
-                const open = openMenu === menu.name;
+                // **MODIFIED:** Check if the menu is open using isMenuOpen
+                const open = isMenuOpen(menu.name);
 
                 return (
                   <li key={i}>
@@ -149,25 +221,8 @@ const isMenuActive = (menu) => {
                       {isOpen && <span>{menu.name}</span>}
                     </button>
 
-                    {open && menu.submenus && (
-                      <ul className="pl-8 space-y-1 mt-1">
-                        {menu.submenus.map((sub, j) => (
-                          <li key={j}>
-                            <NavLink
-                              to={sub.path}
-                              className={({ isActive }) =>
-                                `block p-1 rounded text-sm ${
-                                  isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
-                                }`
-                              }
-                              onClick={() => setMobileOpen(false)} // Only close mobile, do not touch openMenu
-                            >
-                              {isOpen && sub.name}
-                            </NavLink>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    {/* **MODIFIED:** Check if the menu is open using the updated state */}
+                    {open && menu.submenus && renderSubmenus(menu.submenus)}
                   </li>
                 );
               })}

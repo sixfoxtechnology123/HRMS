@@ -19,7 +19,10 @@ const AdminLogin = () => {
       const endpoint =
         loginType === "admin"
           ? "http://localhost:5001/api/adminManagement/login"
-          : "http://localhost:5001/api/employee/login"; // employee login API
+          : "http://localhost:5001/api/employee-ids/login"; 
+
+          
+
 
       const res = await axios.post(endpoint, {
         userId: userId.trim(),
@@ -56,7 +59,6 @@ const AdminLogin = () => {
   return (
     <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
       <div className="relative z-10 bg-white/10 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-[90%] sm:w-[400px] border border-white/20">
-        
         {/* Heading */}
         <h1 className="text-3xl font-bold text-white text-center mb-6">
           {loginType === "admin" ? "Admin Login" : "Employee Login"}
@@ -101,7 +103,10 @@ const AdminLogin = () => {
               type="text"
               placeholder={`Enter ${loginType} userId`}
               value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setUserId(loginType === "employee" ? value.toUpperCase() : value);
+              }}
               className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-purple-500"
               required
             />
