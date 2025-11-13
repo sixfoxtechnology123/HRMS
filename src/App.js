@@ -32,6 +32,10 @@ import LeaveRuleMaster from "./Master/LeaveRuleMaster";
 import LeaveRuleList from "./Master/LeaveRuleList";
 import LeaveAllocationForm from "./Master/LeaveAllocationForm";
 import LeaveAllocationList from "./Master/LeaveAllocationList";
+import EmployeeDashboard from "./EmployeeCorner/EmployeeDashboard";
+import UserProfile from "./EmployeeCorner/UserProfile";
+import EmployeeHome from "./EmployeeCorner/EmployeeHome";
+import EmployeeCornerSidebar from "./EmployeeCorner/EmployeeCornerSidebar";
 
 export default function App(){
   return (
@@ -68,6 +72,10 @@ export default function App(){
       <Route path="/LeaveRuleList" element={<LeaveRuleList/>} />
       <Route path="/LeaveAllocationForm" element={<LeaveAllocationForm/>} />
       <Route path="/LeaveAllocationList" element={<LeaveAllocationList/>} />
+      <Route path="/EmployeeDashboard" element={<EmployeeDashboard/>} />
+      <Route path="/UserProfile" element={<UserProfile/>} />
+      <Route path="/EmployeeHome" element={<EmployeeHome/>} />
+      <Route path="/EmployeeCornerSidebar" element={<EmployeeCornerSidebar/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

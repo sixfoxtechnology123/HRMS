@@ -27,28 +27,12 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const admin = JSON.parse(localStorage.getItem("adminData")) || {};
-    setPermissions(admin.permissions || []);
-    setRole(admin.role || "");
 
-    // Initialize openMenu if current path is inside a submenu
-    const leaveMenuPaths = [
-      "/LeaveDashboard",
-      "/LeaveTypeList",
-      "/LeaveRule",
-      "/LeaveAllocation",
-      "/LeaveBalance",
-      "/LeaveReport",
-    ];
-    if (leaveMenuPaths.includes(location.pathname)) {
-      setOpenMenu("Leave Management");
-    }
-  }, [location.pathname]);
 
   const menus = [
     { name: "Dashboard", path: "/Dashboard", icon: LayoutDashboard, permission: "Dashboard_View" },
     { name: "New Employee Reg", path: "/EmployeeList", icon: Users, permission: "Employee_View" },
+    { name: "Employee Corner", path: "/EmployeeDashboard", icon: Users, permission: "Employee_View" },
     { name: "Departments", path: "/DepartmentList", icon: Building2, permission: "Department_View" },
     { name: "Designations", path: "/DesignationList", icon: Briefcase, permission: "Designation_View" },
     {
@@ -60,8 +44,8 @@ const Sidebar = () => {
         { name: "Manage Leave Type", path: "/LeaveTypeList" },
         { name: "Leave Rule", path: "/LeaveRuleList" },
         { name: "Leave Allocation", path: "/LeaveAllocationList" },
-        { name: "Leave Balance", path: "/LeaveBalance" },
-        { name: "Leave Report", path: "/LeaveReport" },
+        // { name: "Leave Balance", path: "" },
+        // { name: "Leave Report", path: "" },
       ],
     },
     { name: "Holidays", path: "/HolidayList", icon: CalendarDays, permission: "Holiday_Manage" },
@@ -71,6 +55,26 @@ const Sidebar = () => {
     { name: "Payroll", path: "/PayrollComponentList", icon: Wallet, permission: "Payroll_Manage" },
     { name: "Admin Management", path: "/AdminManagement", icon: Users, permission: "Admin_Management" },
   ];
+useEffect(() => {
+  const admin = JSON.parse(localStorage.getItem("adminData")) || {};
+  setPermissions(admin.permissions || []);
+  setRole(admin.role || []);
+
+  const leaveMenuPaths = [
+    "/LeaveDashboard",
+    "/LeaveTypeList",
+    "/LeaveRuleList",
+    "/LeaveAllocationList",
+    "/LeaveRuleMaster",
+    "/LeaveTypeMaster",
+    "/LeaveAllocationForm",
+ 
+  ];
+  if (leaveMenuPaths.includes(location.pathname)) {
+    setOpenMenu("Leave Management");
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const handleLogout = () => {
     localStorage.removeItem("adminData");
@@ -87,13 +91,17 @@ const Sidebar = () => {
     }
   };
 
-  const isMenuActive = (menu) => {
-    if (menu.path && location.pathname === menu.path) return true;
-    if (menu.submenus) {
-      return menu.submenus.some((sub) => location.pathname === sub.path);
-    }
-    return false;
-  };
+const isMenuActive = (menu) => {
+  // Active when the current path matches the menu path or any submenu path
+  if (menu.path && location.pathname === menu.path) return true;
+  if (menu.submenus) {
+    return menu.submenus.some(
+      (sub) => sub.path && location.pathname.startsWith(sub.path)
+    );
+  }
+  return false;
+};
+
 
   return (
     <>
