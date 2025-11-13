@@ -10,5 +10,7 @@ router.delete("/:id", controller.deleteEmployeeUserId);
 
 // Employee login route
 router.post("/login", controller.employeeLogin);
+router.get("/details/:employeeId", controller.getEmployeeDetails);
+
 
 module.exports = router;

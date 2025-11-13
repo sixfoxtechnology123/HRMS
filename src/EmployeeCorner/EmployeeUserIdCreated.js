@@ -4,6 +4,7 @@ import axios from "axios";
 import Sidebar from "../component/Sidebar";
 import { Eye, EyeOff } from "lucide-react";
 import { FaTrash, FaEdit } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 const EmployeeUserIdCreated = () => {
   const [employees, setEmployees] = useState([]);
@@ -58,7 +59,7 @@ const EmployeeUserIdCreated = () => {
         email: email,
       }));
     } else {
-      alert("Employee ID not found!");
+      toast.error("Employee ID not found!");
       setFormData((prev) => ({ ...prev, name: "", email: "" }));
     }
   };
@@ -66,7 +67,7 @@ const EmployeeUserIdCreated = () => {
   // Save or update Employee ID
   const saveEmployeeId = async () => {
     if (!formData.employeeId || !formData.name || !formData.email || !formData.password) {
-      return alert("Please fill all fields");
+      return toast.error("Please fill all fields");
     }
 
     const payload = { ...formData };
@@ -78,19 +79,19 @@ const EmployeeUserIdCreated = () => {
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        alert("Employee ID updated successfully!");
+        toast.success("Employee ID updated successfully!");
       } else {
         await axios.post("http://localhost:5001/api/employee-ids", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Employee ID created successfully!");
+        toast.success("Employee ID created successfully!");
       }
       fetchEmployeeIds();
       setEditingId(null);
       setFormData({ employeeId: "", name: "", email: "", password: "" });
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Error saving Employee ID");
+      toast.error(err.response?.data?.message || "Error saving Employee ID");
     }
   };
 
@@ -115,12 +116,12 @@ const EmployeeUserIdCreated = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
-        alert("Employee ID deleted successfully!");
+        toast.success("Employee ID deleted successfully!");
         fetchEmployeeIds();
       })
       .catch((err) => {
         console.error(err);
-        alert(err.response?.data?.message || "Error deleting Employee ID");
+        toast.error(err.response?.data?.message || "Error deleting Employee ID");
       });
   };
 

@@ -1,9 +1,11 @@
 const EmployeeUserId = require("../models/EmployeeUserId");
+const Employee = require("../models/Employee");
+
 
 // Get all EmployeeUserIds
 exports.getAllEmployeeUserIds = async (req, res) => {
   try {
-    const list = await EmployeeUserId.find().sort({ createdAt: -1 });
+    const list = await EmployeeUserId.find().sort({ createdAt: 1 });
     res.json(list);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -72,3 +74,15 @@ exports.employeeLogin = async (req, res) => {
   }
 };
 
+exports.getEmployeeDetails = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const emp = await Employee.findOne({ employeeID: employeeId });
+    if (!emp) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+    res.json(emp);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

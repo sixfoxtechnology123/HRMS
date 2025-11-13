@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, CalendarDays, FileText, Clock, Wallet, Menu, X, ArrowBigRightDash, ArrowBigLeftDash, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  FileText,
+  Clock,
+  Wallet,
+  Menu,
+  X,
+  ArrowBigRightDash,
+  ArrowBigLeftDash,
+  LogOut,
+} from "lucide-react";
 
 const EmployeeCornerSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenu, setOpenMenu] = useState(null);
+  const [openMenus, setOpenMenus] = useState([]); // track all open parent menus
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -15,11 +27,11 @@ const EmployeeCornerSidebar = () => {
       name: "Employee Access",
       icon: Users,
       submenus: [
-        { name: "User Profile", path: "/userProfile", icon: Users },
-        { name: "Holiday Calendar", path: "/holidayCalendar", icon: CalendarDays },
-        { name: "Leave Application", path: "/leaveApplication", icon: FileText },
-        { name: "Employee Pay Slip", path: "/paySlip", icon: Wallet },
-        { name: "HR Policy", path: "/hrPolicy", icon: Clock },
+        { name: "User Profile", path: "/UserProfile", icon: Users },
+        { name: "Holiday Calendar", path: "/EmployeeCalendar", icon: CalendarDays },
+        { name: "Leave Application", path: "", icon: FileText },
+        { name: "Employee Pay Slip", path: "", icon: Wallet },
+        { name: "HR Policy", path: "", icon: Clock },
       ],
     },
   ];
@@ -30,13 +42,20 @@ const EmployeeCornerSidebar = () => {
     navigate("/");
   };
 
-  const handleMenuClick = (menu) => {
-    if (menu.submenus) {
-      setOpenMenu(openMenu === menu.name ? null : menu.name);
-    } else {
-      navigate(menu.path);
-      setMobileOpen(false);
-    }
+  // Keep parent menus open if current route is inside
+  useEffect(() => {
+    const activeParents = menus
+      .filter(menu => menu.submenus && menu.submenus.some(sub => location.pathname === sub.path))
+      .map(menu => menu.name);
+
+    setOpenMenus(activeParents);
+  }, [location.pathname]);
+
+  const toggleMenu = (menuName) => {
+    setOpenMenus(prev => {
+      if (prev.includes(menuName)) return prev.filter(name => name !== menuName);
+      return [...prev, menuName];
+    });
   };
 
   const isMenuActive = (menu) => {
@@ -51,8 +70,10 @@ const EmployeeCornerSidebar = () => {
     <>
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between bg-gray-800 text-white p-3">
-        <h2 className=" font-bold">Employee Corner</h2>
-        <button onClick={() => setMobileOpen(true)}> <Menu size={28} /> </button>
+        <h2 className="font-bold">Employee Corner</h2>
+        <button onClick={() => setMobileOpen(true)}>
+          <Menu size={28} />
+        </button>
       </div>
 
       {/* Sidebar */}
@@ -79,33 +100,29 @@ const EmployeeCornerSidebar = () => {
             {menus.map((menu, i) => {
               const Icon = menu.icon;
               const active = isMenuActive(menu);
-              const open = openMenu === menu.name;
+              const isOpenParent = openMenus.includes(menu.name);
 
               return (
                 <li key={i}>
                   <button
-                    onClick={() => handleMenuClick(menu)}
-                    className={`flex items-center gap-3 p-1 w-full text-left rounded transition-colors ${
-                      active ? "bg-blue-600 text-white" : "hover:bg-gray-700"
-                    }`}
+                    onClick={() => menu.submenus ? toggleMenu(menu.name) : navigate(menu.path)}
+                    className={`flex items-center gap-3 p-2 w-full text-left rounded transition-colors
+                    ${active ? "bg-blue-600 text-white" : "hover:bg-gray-700"}`}
                   >
                     <Icon size={20} />
                     {isOpen && <span>{menu.name}</span>}
                   </button>
 
-                  {/* Submenus */}
-                  {open && menu.submenus && (
-                    <ul className="pl-8 space-y-1 mt-1">
+                  {menu.submenus && isOpenParent && (
+                    <ul className="pl-6 space-y-1 mt-1">
                       {menu.submenus.map((sub, j) => (
                         <li key={j}>
                           <NavLink
                             to={sub.path}
                             className={({ isActive }) =>
-                              `flex items-center gap-3 p-1 rounded text-sm ${
-                                isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"
-                              }`
+                              `flex items-center gap-3 p-2 rounded text-sm transition-colors
+                              ${isActive ? "bg-blue-600 text-white" : "hover:bg-gray-700"}`
                             }
-                            onClick={() => setMobileOpen(false)}
                           >
                             <sub.icon size={18} />
                             {isOpen && <span>{sub.name}</span>}
@@ -122,7 +139,7 @@ const EmployeeCornerSidebar = () => {
           <div className="px-2 mb-4">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full bg-red-600 text-white p-1 rounded transition"
+              className="flex items-center gap-3 w-full bg-red-600 text-white p-2 rounded transition"
             >
               <LogOut size={20} />
               {isOpen && <span>Logout</span>}
@@ -133,7 +150,10 @@ const EmployeeCornerSidebar = () => {
 
       {/* Mobile Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black opacity-50 z-40 md:hidden" onClick={() => setMobileOpen(false)}></div>
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        ></div>
       )}
     </>
   );

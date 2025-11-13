@@ -43,7 +43,22 @@ const AdminLogin = () => {
         };
 
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("adminData", JSON.stringify(userData));
+       if (loginType === "employee") {
+  localStorage.setItem(
+    "employeeUser",
+    JSON.stringify({
+      employeeID: user.employeeID || user.employeeId, // match backend field exactly
+      firstName: user.firstName,
+      lastName: user.lastName,
+      designation: user.designation,
+      department: user.department,
+      phone: user.phone,
+    })
+  );
+} else {
+  localStorage.setItem("adminData", JSON.stringify(userData));
+}
+
         localStorage.setItem("userPermissions", JSON.stringify(userData.permissions));
 
         navigate(loginType === "admin" ? "/Dashboard" : "/EmployeeDashboard");

@@ -433,7 +433,7 @@ leaveAuthority: getEmployeeName(leaveAuthority),
               </h2>
 
               <h3 className="text-xl font-semibold text-sky-600 col-span-full">
-                Personal and Service Details
+                Personal Details
               </h3>
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

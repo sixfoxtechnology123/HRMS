@@ -6,6 +6,7 @@ import { Home } from "lucide-react";
 import { Eye, EyeOff } from "lucide-react";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import Sidebar from "../component/Sidebar";
+import toast from "react-hot-toast";
 
 export default function AdminManagement() {
   const [users, setUsers] = useState([]);
@@ -80,7 +81,7 @@ export default function AdminManagement() {
     const isEditing = !!editingUserId;
 
     if (!newUser.userId || !newUser.name || (!isEditing && !newUser.password)) {
-      return alert(
+      return toast.success(
         !isEditing
           ? "Please fill User ID, Name and Password"
           : "Please fill User ID and Name"
@@ -98,7 +99,7 @@ export default function AdminManagement() {
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        alert(res.data.message || "User updated successfully!");
+        toast.success(res.data.message || "User updated successfully!");
         setUsers((prev) =>
           prev.map((u) => (u._id === editingUserId ? { ...u, ...payload } : u))
         );
@@ -108,7 +109,7 @@ export default function AdminManagement() {
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        alert(res.data.message || "New user added!");
+        toast.success(res.data.message || "New user added!");
         setUsers((prev) => [...prev, res.data.user]);
       }
 
@@ -122,7 +123,7 @@ export default function AdminManagement() {
       });
     } catch (err) {
       console.error("Save user error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Error saving user");
+      toast.error(err.response?.data?.message || "Error saving user");
     }
   };
 
