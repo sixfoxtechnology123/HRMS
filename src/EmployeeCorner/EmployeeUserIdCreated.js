@@ -28,6 +28,7 @@ const EmployeeUserIdCreated = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setEmployees(res.data))
+      
       .catch((err) => console.error(err));
   }, [token]);
 
@@ -49,7 +50,8 @@ const EmployeeUserIdCreated = () => {
   const handleFetchEmployee = (id) => {
     if (!id) return;
 
-    const emp = employees.find((e) => e.employeeID === id.toUpperCase());
+    const emp = employees.find((e) => e.employeeID?.toUpperCase() === id.toUpperCase());
+
     if (emp) {
       const fullName = [emp.firstName, emp.middleName, emp.lastName].filter(Boolean).join(" ");
       const email = emp.permanentAddress?.email || "";

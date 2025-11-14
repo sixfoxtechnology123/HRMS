@@ -115,7 +115,7 @@ const EmployeeList = () => {
                 <td className="border border-green-500 px-2 py-1">{index+1}</td>
                 <td className="border border-green-500 px-2 py-1">{e.employeeID}</td>
                 <td className="border border-green-500 px-2 py-1">
-                  {e.firstName} {e.lastName}
+                  {e.firstName} {e.middleName} {e.lastName}
                 </td>
                 {/* <td className="border border-green-500 px-2 py-1">{e.email}</td> */}
 
