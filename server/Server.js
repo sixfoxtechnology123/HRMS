@@ -36,6 +36,7 @@ const adminManagementRoutes = require("./routes/adminManagementRoutes");
 const leaveRuleRoutes = require("./routes/leaveRule");
 const leaveAllocationRoutes = require("./routes/leaveAllocationRoutes");
 const employeeUserIdRoutes = require("./routes/employeeUserId");
+const leaveApplicationRoutes = require("./routes/leaveApplicationRoutes");
 
 app.use("/api/master", masterRoutes);
 app.use("/api/departments", departmentRoutes);
@@ -54,6 +55,7 @@ app.use("/api/adminManagement", adminManagementRoutes);
 app.use("/api/leaverule", leaveRuleRoutes);
 app.use("/api/leaveAllocations", leaveAllocationRoutes);
 app.use("/api/employee-ids", employeeUserIdRoutes);
+app.use("/api/leave-application", leaveApplicationRoutes);
 
 // ----------------- Create Default Admin -----------------
 const createDefaultAdmin = async () => {

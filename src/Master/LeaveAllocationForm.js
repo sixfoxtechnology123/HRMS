@@ -13,6 +13,7 @@ const LeaveAllocationForm = () => {
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
+    employeeID: "",
     leaveType: "",
     employee: "",
     maxLeave: "",
@@ -25,6 +26,7 @@ const LeaveAllocationForm = () => {
   useEffect(() => {
     if (editingData) {
       setFormData({
+        employeeID: editingData.employeeID || "",
         leaveType: editingData.leaveType,
         employee: editingData.employee,
         maxLeave: editingData.maxLeave,
@@ -48,8 +50,24 @@ const LeaveAllocationForm = () => {
       .catch(() => toast.error("Failed to load Employee Data"));
   }, []);
 
+  // Fetch employee name automatically when Employee ID changes
+  useEffect(() => {
+    if (formData.employeeID) {
+      const emp = employees.find((e) => e.employeeID === formData.employeeID);
+      if (emp) {
+        setFormData((prev) => ({
+          ...prev,
+          employee: `${emp.firstName} ${emp.middleName} ${emp.lastName}`,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, employee: "" }));
+      }
+    }
+  }, [formData.employeeID, employees]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name === "leaveType") {
       const selectedLeave = leaveTypes.find((lt) => lt.leaveType === value);
       setFormData({
@@ -64,6 +82,7 @@ const LeaveAllocationForm = () => {
 
   const handleReset = () => {
     setFormData({
+      employeeID: "",
       leaveType: "",
       employee: "",
       maxLeave: "",
@@ -77,6 +96,7 @@ const LeaveAllocationForm = () => {
     e.preventDefault();
     if (
       !formData.leaveType ||
+      !formData.employeeID ||
       !formData.employee ||
       !formData.maxLeave ||
       !formData.openingBalance ||
@@ -88,7 +108,6 @@ const LeaveAllocationForm = () => {
     }
 
     if (editingData) {
-      // Edit mode: PUT request
       axios
         .put(`http://localhost:5001/api/leaveAllocations/${editingData._id}`, formData)
         .then(() => {
@@ -97,7 +116,6 @@ const LeaveAllocationForm = () => {
         })
         .catch(() => toast.error("Failed to update Leave Allocation"));
     } else {
-      // New allocation: POST request
       axios
         .post("http://localhost:5001/api/leaveAllocations", formData)
         .then(() => {
@@ -119,6 +137,32 @@ const LeaveAllocationForm = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Employee ID */}
+            <div>
+              <label className="block text-gray-600 mb-1 font-medium">Employee ID</label>
+              <input
+                type="text"
+                name="employeeID"
+                value={formData.employeeID}
+                onChange={handleChange}
+                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
+                placeholder="Enter Employee ID"
+              />
+            </div>
+
+            {/* Employee Name & Code */}
+            <div>
+              <label className="block text-gray-600 mb-1 font-medium">Employee Name</label>
+              <input
+                type="text"
+                name="employee"
+                value={formData.employee}
+                readOnly
+                className="w-full pl-2 pr-1 border border-gray-300 bg-gray-100 cursor-not-allowed font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
+                placeholder="Employee Name will auto-fill"
+              />
+            </div>
+
             {/* Leave Type */}
             <div>
               <label className="block text-gray-600 mb-1 font-medium">Leave Type</label>
@@ -132,27 +176,6 @@ const LeaveAllocationForm = () => {
                 {leaveTypes.map((lt) => (
                   <option key={lt._id} value={lt.leaveType}>
                     {lt.leaveType}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Employee Name & Code */}
-            <div>
-              <label className="block text-gray-600 mb-1 font-medium">Employee Name & Code</label>
-              <select
-                name="employee"
-                value={formData.employee}
-                onChange={handleChange}
-                className="w-full pl-2 pr-1 border border-gray-300 font-medium rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-150"
-              >
-                <option value="">Select Employee</option>
-                {employees.map((emp) => (
-                  <option
-                    key={emp._id}
-                    value={`${emp.firstName} ${emp.middleName} ${emp.lastName} - ${emp.employeeID}`}
-                  >
-                    {emp.firstName} {emp.middleName} {emp.lastName} - {emp.employeeID}
                   </option>
                 ))}
               </select>
@@ -220,7 +243,7 @@ const LeaveAllocationForm = () => {
                 >
                   Reset
                 </button>
-               <button
+                <button
                   type="submit"
                   className={`font-medium text-white px-4 py-1 rounded ${
                     editingData ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"
@@ -228,7 +251,6 @@ const LeaveAllocationForm = () => {
                 >
                   {editingData ? "Update" : "Submit"}
                 </button>
-
               </div>
             </div>
           </form>

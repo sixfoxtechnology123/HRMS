@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const leaveAllocationSchema = new mongoose.Schema(
   {
+    employeeID: {
+      type: String,
+      required: true, // make it required since we fetch employee by ID
+    },
     leaveType: {
       type: String,
       required: true,
