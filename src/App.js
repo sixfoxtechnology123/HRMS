@@ -38,6 +38,7 @@ import EmployeeHome from "./EmployeeCorner/EmployeeHome";
 import EmployeeCornerSidebar from "./EmployeeCorner/EmployeeCornerSidebar";
 import EmployeeUserIdCreated from "./EmployeeCorner/EmployeeUserIdCreated";
 import EmployeeCalendar from "./EmployeeCorner/EmployeeCalendar";
+import EmployeeLeaveApplication from "./EmployeeCorner/EmployeeLeaveApplication";
 
 export default function App(){
   return (
@@ -80,6 +81,7 @@ export default function App(){
       <Route path="/EmployeeCornerSidebar" element={<EmployeeCornerSidebar/>} />
       <Route path="/EmployeeUserIdCreated" element={<EmployeeUserIdCreated/>} />
       <Route path="/EmployeeCalendar" element={<EmployeeCalendar/>} />
+      <Route path="/EmployeeLeaveApplication" element={<EmployeeLeaveApplication/>} />
      </Routes>
         <Toaster
           reverseOrder={false}

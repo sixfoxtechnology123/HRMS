@@ -29,7 +29,7 @@ const EmployeeCornerSidebar = () => {
       submenus: [
         { name: "User Profile", path: "/UserProfile", icon: Users },
         { name: "Holiday Calendar", path: "/EmployeeCalendar", icon: CalendarDays },
-        { name: "Leave Application", path: "", icon: FileText },
+        { name: "Leave Application", path: "/EmployeeLeaveApplication", icon: FileText },
         { name: "Employee Pay Slip", path: "", icon: Wallet },
         { name: "HR Policy", path: "", icon: Clock },
       ],
