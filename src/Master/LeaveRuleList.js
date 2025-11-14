@@ -10,20 +10,18 @@ const LeaveRuleList = () => {
   const [leaveRules, setLeaveRules] = useState([]);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchLeaveRules = async () => {
-    try {
-     const res = await axios.get("http://localhost:5001/api/leaveRule");
-      setLeaveRules(res.data);
-
-    } catch (err) {
-      console.error("Fetch LeaveRules Error:", err);
-      toast.error("Failed to fetch leave rules");
-    }
-  };
-  fetchLeaveRules();
-}, []);
-
+  useEffect(() => {
+    const fetchLeaveRules = async () => {
+      try {
+        const res = await axios.get("http://localhost:5001/api/leaveRule");
+        setLeaveRules(res.data);
+      } catch (err) {
+        console.error("Fetch LeaveRules Error:", err);
+        toast.error("Failed to fetch leave rules");
+      }
+    };
+    fetchLeaveRules();
+  }, []);
 
   // Delete leave rule
   const deleteLeaveRule = async (id) => {
@@ -89,7 +87,7 @@ useEffect(() => {
                     <td className="border border-green-500 px-2 py-1">
                       <div className="flex justify-center gap-4">
                         <button
-                          onClick={() => navigate("/LeaveRuleMaster", { state: { leaveRule: rule } })}
+                          onClick={() => navigate("/LeaveRuleMaster", { state: { editingData: rule } })}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           <FaEdit />
