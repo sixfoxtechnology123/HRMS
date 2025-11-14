@@ -65,20 +65,24 @@ const LeaveAllocationForm = () => {
     }
   }, [formData.employeeID, employees]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
-    if (name === "leaveType") {
-      const selectedLeave = leaveTypes.find((lt) => lt.leaveType === value);
-      setFormData({
-        ...formData,
-        leaveType: value,
-        maxLeave: selectedLeave ? selectedLeave.maximumNo : "",
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
+  if (name === "employeeID") {
+    // Convert to uppercase
+    setFormData({ ...formData, [name]: value.toUpperCase() });
+  } else if (name === "leaveType") {
+    const selectedLeave = leaveTypes.find((lt) => lt.leaveType === value);
+    setFormData({
+      ...formData,
+      leaveType: value,
+      maxLeave: selectedLeave ? selectedLeave.maximumNo : "",
+    });
+  } else {
+    setFormData({ ...formData, [name]: value });
+  }
+};
+
 
   const handleReset = () => {
     setFormData({
