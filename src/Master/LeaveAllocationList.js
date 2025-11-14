@@ -58,28 +58,28 @@ const LeaveAllocationList = () => {
             <table className="w-full table-auto border border-green-500 text-sm">
               <thead className="bg-gray-200">
                 <tr>
-                  <th className="border border-green-500 px-3 py-2">Sl.No</th>
-                  <th className="border border-green-500 px-3 py-2">Employee</th>
-                  <th className="border border-green-500 px-3 py-2">Leave Type</th>
-                  <th className="border border-green-500 px-3 py-2">Max Leave</th>
-                  <th className="border border-green-500 px-3 py-2">Opening Balance</th>
-                  <th className="border border-green-500 px-3 py-2">Leave in Hand</th>
-                  <th className="border border-green-500 px-3 py-2">Month/Year</th>
-                  <th className="border border-green-500 px-3 py-2">Action</th>
+                  <th className="border border-green-500 px-3 py-1">Sl.No</th>
+                  <th className="border border-green-500 px-3 py-1">Employee</th>
+                  <th className="border border-green-500 px-3 py-1">Leave Type</th>
+                  <th className="border border-green-500 px-3 py-1">Max Leave</th>
+                  <th className="border border-green-500 px-3 py-1">Opening Balance</th>
+                  <th className="border border-green-500 px-3 py-1">Leave in Hand</th>
+                  <th className="border border-green-500 px-3 py-1">Month/Year</th>
+                  <th className="border border-green-500 px-3 py-1">Action</th>
                 </tr>
               </thead>
               <tbody className="text-center">
                 {allocations.length > 0 ? (
                   allocations.map((alloc, index) => (
                     <tr key={alloc._id} className="hover:bg-gray-100 transition">
-                      <td className="border border-green-500 px-3 py-2">{index + 1}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.employee}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.leaveType}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.maxLeave}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.openingBalance}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.leaveInHand}</td>
-                      <td className="border border-green-500 px-3 py-2">{alloc.monthYear}</td>
-                      <td className="border border-green-500 px-3 py-2">
+                      <td className="border border-green-500 px-3 py-1">{index + 1}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.employee}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.leaveType}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.maxLeave}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.openingBalance}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.leaveInHand}</td>
+                      <td className="border border-green-500 px-3 py-1">{alloc.monthYear}</td>
+                      <td className="border border-green-500 px-3 py-1">
                         <div className="flex justify-center gap-4">
                          <button
                             onClick={() => navigate("/LeaveAllocationForm", { state: { allocation: alloc } })}
