@@ -1,91 +1,51 @@
-const LeaveApplication = require("../models/LeaveApplication");
-const LeaveAllocation = require("../models/LeaveAllocation");
+import LeaveApplication from "../models/LeaveApplication.js";
+import LeaveAllocation from "../models/LeaveAllocation.js";
 
 // Apply for Leave
-exports.applyLeave = async (req, res) => {
+export const applyLeave = async (req, res) => {
   try {
-    const {
-      employeeId,
-      employeeName,
-      applicationDate,
-      leaveType,
-      leaveInHand,
-      fromDate,
-      toDate,
-      noOfDays,
-      reason,
-    } = req.body;
+    const { employeeId, employeeName, applicationDate, leaveType, leaveInHand, fromDate, toDate, noOfDays, reason } = req.body;
 
-    // Check leave allocation
-    const allocation = await LeaveAllocation.findOne({
-      employee: new RegExp(employeeId, "i"),
-      leaveType,
-    });
+    const allocation = await LeaveAllocation.findOne({ employeeID: employeeId, leaveType });
+    if (!allocation) return res.status(400).json({ message: "No leave allocation found for this leave type" });
 
-    if (!allocation) {
-      return res
-        .status(400)
-        .json({ message: "No leave allocation found for this leave type" });
-    }
+    if (noOfDays > allocation.leaveInHand) return res.status(400).json({ message: `You only have ${allocation.leaveInHand} days in hand` });
 
-    // Leave In Hand check
-    if (noOfDays > allocation.leaveInHand) {
-      return res.status(400).json({
-        message: `You only have ${allocation.leaveInHand} days in hand`,
-      });
-    }
-
-    // Save leave application
-    const newLeave = new LeaveApplication({
-      employeeId,
-      employeeName,
-      applicationDate,
-      leaveType,
-      leaveInHand,
-      fromDate,
-      toDate,
-      noOfDays,
-      reason,
-    });
-
+    const newLeave = new LeaveApplication({ employeeId, employeeName, applicationDate, leaveType, leaveInHand, fromDate, toDate, noOfDays, reason });
     await newLeave.save();
 
     res.status(201).json({ message: "Leave application submitted", newLeave });
   } catch (error) {
+    console.error("Server Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
 // Get All Leave Applications for an Employee
-exports.getEmployeeLeaves = async (req, res) => {
+export const getEmployeeLeaves = async (req, res) => {
   try {
     const employeeId = req.params.employeeId;
-
-    const leaves = await LeaveApplication.find({ employeeId }).sort({
-      createdAt: -1,
-    });
-
+    const leaves = await LeaveApplication.find({ employeeId }).sort({ createdAt: -1 });
     res.status(200).json(leaves);
   } catch (error) {
+    console.error("Server Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
-// Get leave allocations for an employee
-exports.getLeaveAllocationsByEmployee = async (req, res) => {
+
+// Get Leave Allocations for an Employee
+export const getLeaveAllocationsByEmployee = async (req, res) => {
   try {
-    const employeeId = req.params.employeeId;
+    const { employeeId } = req.params;
+    // console.log("EmployeeID:", employeeId); // debug
+    const records = await LeaveAllocation.find({ employeeID: employeeId });
+    // console.log("Records:", records); // debug
 
-    // Find all leave allocations for this employee
-    const allocations = await LeaveAllocation.find({
-      employee: new RegExp(employeeId, "i"), // match employee id in 'employee' field
-    });
+    if (!records.length) return res.status(404).json({ message: "No leave allocations found" });
 
-    if (!allocations || allocations.length === 0) {
-      return res.status(404).json({ message: "No leave allocations found" });
-    }
-
-    res.status(200).json(allocations);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(200).json(records);
+  } catch (err) {
+    console.error("Server Error:", err);
+    res.status(500).json({ message: "Server Error" });
   }
 };
