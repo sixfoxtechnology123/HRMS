@@ -49,3 +49,45 @@ export const getLeaveAllocationsByEmployee = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+// Delete a leave application
+export const deleteLeaveApplication = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const leave = await LeaveApplication.findById(id);
+
+    if (!leave) {
+      return res.status(404).json({ message: "Leave application not found" });
+    }
+
+    await leave.deleteOne(); // or LeaveApplication.findByIdAndDelete(id)
+    res.status(200).json({ message: "Leave application deleted successfully" });
+  } catch (err) {
+    console.error("Server Error:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+// Update leave application
+export const updateLeaveApplication = async (req, res) => {
+  try {
+    const leaveId = req.params.id;
+    const { leaveType, leaveInHand, fromDate, toDate, noOfDays, reason } = req.body;
+
+    const existingLeave = await LeaveApplication.findById(leaveId);
+    if (!existingLeave) return res.status(404).json({ message: "Leave not found" });
+
+    existingLeave.leaveType = leaveType;
+    existingLeave.leaveInHand = leaveInHand;
+    existingLeave.fromDate = fromDate;
+    existingLeave.toDate = toDate;
+    existingLeave.noOfDays = noOfDays;
+    existingLeave.reason = reason;
+
+    await existingLeave.save();
+
+    res.status(200).json({ message: "Leave updated successfully", leave: existingLeave });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error while updating leave" });
+  }
+};
+

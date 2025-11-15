@@ -3,10 +3,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import EmployeeCornerSidebar from "./EmployeeCornerSidebar";
+import { useLocation } from "react-router-dom";
 
 const EmployeeLeaveApplication = () => {
+   const location = useLocation();
+  const editingData = location.state?.editingData || null;
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaveInHand, setLeaveInHand] = useState(0);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
 
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -74,6 +80,52 @@ useEffect(() => {
   setFormData((prev) => ({ ...prev, noOfDays: diff }));
 }, [formData.fromDate, formData.toDate]);
 
+
+useEffect(() => {
+  if (!loggedUser || !loggedUser.employeeID) return;
+
+  axios
+    .get(`http://localhost:5001/api/leave-application/leaveAllocations/employee/${loggedUser.employeeID}`)
+    .then((res) => {
+      const data = res.data;
+      if (!data.length) return;
+
+      setLeaveTypes(data);
+
+      if (editingData) {
+        setFormData({
+          employeeId: editingData.employeeId,
+          employeeName: editingData.employeeName,
+          applicationDate: formatDate(editingData.applicationDate),
+          leaveType: editingData.leaveType,
+          leaveInHand: editingData.leaveInHand,
+          fromDate: formatDate(editingData.fromDate),
+          toDate: formatDate(editingData.toDate),
+          noOfDays: editingData.noOfDays,
+          reason: editingData.reason,
+        });
+        setLeaveInHand(editingData.leaveInHand);
+        setEditingId(editingData._id);
+        setIsEditMode(true);
+      } else {
+        setFormData({
+          employeeId: data[0].employeeID,
+          employeeName: data[0].employee,
+          applicationDate: formatDate(new Date()),
+          leaveType: data[0].leaveType,
+          leaveInHand: data[0].leaveInHand,
+          fromDate: "",
+          toDate: "",
+          noOfDays: 0,
+          reason: "",
+        });
+        setLeaveInHand(data[0].leaveInHand);
+      }
+    })
+    .catch(() => toast.error("Error fetching leave allocations"));
+}, [editingData]);
+
+
   const handleLeaveTypeChange = (value) => {
     const selected = leaveTypes.find((lt) => lt.leaveType === value);
 
@@ -102,30 +154,42 @@ useEffect(() => {
     setFormData((prev) => ({ ...prev, noOfDays: diff }));
   };
 
-  const handleSubmit = async () => {
-    try {
+const handleSubmit = async () => {
+  try {
+    if (isEditMode) {
+      await axios.put(
+        `http://localhost:5001/api/leave-application/${editingId}`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Leave application updated!");
+    } else {
       await axios.post(
         "http://localhost:5001/api/leave-application",
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       toast.success("Leave application submitted!");
-
-      setFormData((prev) => ({
-        ...prev,
-        leaveType: leaveTypes[0]?.leaveType || "",
-        leaveInHand: leaveTypes[0]?.leaveInHand || 0,
-        fromDate: "",
-        toDate: "",
-        noOfDays: 0,
-        reason: "",
-      }));
-      setLeaveInHand(leaveTypes[0]?.leaveInHand || 0);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error submitting leave");
     }
-  };
+
+    setFormData({
+      employeeId: formData.employeeId,
+      employeeName: formData.employeeName,
+      applicationDate: formData.applicationDate,
+      leaveType: leaveTypes[0]?.leaveType || "",
+      leaveInHand: leaveTypes[0]?.leaveInHand || 0,
+      fromDate: "",
+      toDate: "",
+      noOfDays: 0,
+      reason: "",
+    });
+    setLeaveInHand(leaveTypes[0]?.leaveInHand || 0);
+    setIsEditMode(false);
+    setEditingId(null);
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Error submitting leave");
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -249,11 +313,14 @@ useEffect(() => {
 
         <div className="flex justify-end mt-4">
           <button
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-1 rounded"
-          >
-            Submit
-          </button>
+              onClick={handleSubmit}
+              className={`px-4 py-1 rounded ${
+                isEditMode ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-600 hover:bg-blue-700"
+              } text-white`}
+            >
+              {isEditMode ? "Update" : "Submit"}
+            </button>
+
         </div>
       </div>
     </div>
